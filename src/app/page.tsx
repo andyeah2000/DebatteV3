@@ -1,9 +1,11 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { HeroSection } from '@/components/sections/hero'
 import { FeaturedDebates } from '@/components/sections/featured-debates'
 import { TrendingTopics } from '@/components/sections/trending-topics'
-import { SearchInput } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 
 export default function HomePage() {
   return (
