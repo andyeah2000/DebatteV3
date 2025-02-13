@@ -28,7 +28,9 @@ export function DebateView({ debateId }: DebateViewProps) {
 
   const { loading, error: apolloError, data } = useQuery(GET_DEBATE, {
     variables: { id: debateId },
-    pollInterval: 5000 // Poll every 5 seconds for updates
+    onError: (error) => {
+      console.error('Error in debate query:', error);
+    }
   })
 
   const [createComment] = useMutation(CREATE_COMMENT, {
@@ -154,6 +156,10 @@ export function DebateView({ debateId }: DebateViewProps) {
     } catch (error) {
       console.error('Failed to increment view count:', error)
     }
+  }
+
+  if (!debateId || !isValidUUID(debateId)) {
+    return null; // Don't show error, let the page component handle this
   }
 
   if (loading) return <LoadingSpinner data-testid="debate-loading" />

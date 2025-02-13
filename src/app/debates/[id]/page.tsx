@@ -149,7 +149,9 @@ export default function DebateDetailPage() {
 
   const { loading, error: apolloError, data } = useQuery(GET_DEBATE, {
     variables: { id },
-    pollInterval: 5000 // Poll every 5 seconds for updates
+    onError: (error) => {
+      console.error('Error in debate query:', error);
+    }
   })
 
   const [createComment] = useMutation(CREATE_COMMENT, {
@@ -176,14 +178,17 @@ export default function DebateDetailPage() {
   }
 
   useEffect(() => {
-    if (!id || !isValidUUID(id as string)) {
+    // Only show invalid ID error if the ID is present but invalid
+    if (id && !isValidUUID(id as string)) {
       setError('Invalid debate ID');
-      setIsLoading(false);
-      return;
+    } else {
+      setError(''); // Clear error if ID is valid
     }
-    fetchDebate()
-    checkUserVote()
-  }, [id])
+    if (id && isValidUUID(id as string)) {
+      fetchDebate();
+      checkUserVote();
+    }
+  }, [id]);
 
   async function fetchDebate() {
     try {
