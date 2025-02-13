@@ -23,13 +23,26 @@ const nextConfig = {
     // Exclude backend directory from compilation
     config.watchOptions = {
       ...config.watchOptions,
-      ignored: ['**/node_modules/**', '**/backend/**', '**/.git/**']
+      ignored: ['**/node_modules/**', '**/backend/**', '**/.git/**', '**/cypress/**']
     };
 
     // Add module aliases
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': '/src',
+    };
+
+    // Exclude backend from compilation
+    config.module = {
+      ...config.module,
+      exprContextCritical: false,
+      rules: [
+        ...config.module.rules,
+        {
+          test: /backend\//,
+          loader: 'ignore-loader'
+        }
+      ]
     };
 
     return config;
