@@ -86,7 +86,7 @@ const sections = [
     content: [
       {
         subtitle: 'Cookie Usage',
-        text: 'We use cookies and similar technologies to enhance your experience and collect usage data.',
+        text: 'We use &quot;cookies&quot; and similar technologies to enhance your experience and analyze site traffic.',
       },
       {
         subtitle: 'Tracking Options',

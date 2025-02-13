@@ -61,7 +61,7 @@ export default function Error({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            We've encountered an unexpected error. Our team has been notified and is working to fix
+            We&apos;ve encountered an unexpected error. Our team has been notified and is working to fix
             the issue.
           </motion.p>
           {error.digest && (

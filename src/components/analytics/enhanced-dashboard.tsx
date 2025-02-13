@@ -2,10 +2,12 @@ import { useMemo } from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveHeatMap } from '@nivo/heatmap';
+import { ResponsiveNetwork } from '@nivo/network';
+import { ResponsiveRadar } from '@nivo/radar';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/toast';
-import { AnalyticsData } from '@/types/analytics';
+import { useToast } from '@/components/ui/use-toast';
+import { AnalyticsData, NetworkNode, NetworkLink } from '@/types/analytics';
 import { LoadingState } from './loading-state';
 import { ErrorState } from './error-state';
 
@@ -30,6 +32,84 @@ export function EnhancedDashboard({
 }: EnhancedDashboardProps) {
   const { toast } = useToast();
 
+  const userActivityData = useMemo(() => {
+    if (!analytics) return [];
+    return [
+      {
+        id: 'Active Users',
+        data: analytics.userActivity.map((d) => ({
+          x: new Date(d.timestamp),
+          y: d.activeUsers,
+        })),
+      },
+      {
+        id: 'New Users',
+        data: analytics.userActivity.map((d) => ({
+          x: new Date(d.timestamp),
+          y: d.newUsers,
+        })),
+      },
+    ];
+  }, [analytics]);
+
+  const debateDistributionData = useMemo(() => {
+    if (!analytics) return [];
+    return analytics.categories.map((category) => ({
+      id: category.name,
+      label: category.name,
+      value: category.count,
+    }));
+  }, [analytics]);
+
+  const userEngagementHeatmap = useMemo(() => {
+    if (!analytics) return [];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return days.map(day => ({
+      id: day,
+      data: analytics.hourlyEngagement.map(hour => ({
+        x: hour.hour.toString(),
+        y: hour[day.toLowerCase() as keyof typeof hour],
+      }))
+    }));
+  }, [analytics]);
+
+  const debateNetworkData = useMemo(() => {
+    if (!analytics) return { nodes: [], links: [] };
+    return {
+      nodes: analytics.debateNetwork.nodes.map(node => ({
+        ...node,
+        data: { height: node.size }
+      })),
+      links: analytics.debateNetwork.links
+    };
+  }, [analytics]);
+
+  const qualityMetricsData = useMemo(() => {
+    if (!analytics) return [];
+    return [
+      {
+        metric: 'Argument Quality',
+        value: analytics.qualityMetrics.argumentQuality,
+      },
+      {
+        metric: 'Factual Accuracy',
+        value: analytics.qualityMetrics.factualAccuracy,
+      },
+      {
+        metric: 'Civility Score',
+        value: analytics.qualityMetrics.civilityScore,
+      },
+      {
+        metric: 'Source Quality',
+        value: analytics.qualityMetrics.sourceQuality,
+      },
+      {
+        metric: 'Engagement Level',
+        value: analytics.qualityMetrics.engagementLevel,
+      },
+    ];
+  }, [analytics]);
+
   const handleExport = async () => {
     try {
       await onExport();
@@ -53,76 +133,6 @@ export function EnhancedDashboard({
   if (error || !analytics) {
     return <ErrorState message={error?.message} onRetry={onRetry} />;
   }
-
-  const userActivityData = useMemo(() => {
-    return [
-      {
-        id: 'Active Users',
-        data: analytics.userActivity.map((d) => ({
-          x: new Date(d.timestamp),
-          y: d.activeUsers,
-        })),
-      },
-      {
-        id: 'New Users',
-        data: analytics.userActivity.map((d) => ({
-          x: new Date(d.timestamp),
-          y: d.newUsers,
-        })),
-      },
-    ];
-  }, [analytics.userActivity]);
-
-  const debateDistributionData = useMemo(() => {
-    return analytics.categories.map((category) => ({
-      id: category.name,
-      label: category.name,
-      value: category.count,
-    }));
-  }, [analytics.categories]);
-
-  const userEngagementHeatmap = useMemo(() => {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return days.map(day => ({
-      id: day,
-      data: analytics.hourlyEngagement.map(hour => ({
-        x: hour.hour.toString(),
-        y: hour[day.toLowerCase() as keyof typeof hour],
-      }))
-    }));
-  }, [analytics.hourlyEngagement]);
-
-  const debateNetworkData = useMemo(() => {
-    return {
-      nodes: analytics.debateNetwork.nodes,
-      links: analytics.debateNetwork.links,
-    };
-  }, [analytics.debateNetwork]);
-
-  const qualityMetricsData = useMemo(() => {
-    return [
-      {
-        metric: 'Argument Quality',
-        value: analytics.qualityMetrics.argumentQuality,
-      },
-      {
-        metric: 'Factual Accuracy',
-        value: analytics.qualityMetrics.factualAccuracy,
-      },
-      {
-        metric: 'Civility Score',
-        value: analytics.qualityMetrics.civilityScore,
-      },
-      {
-        metric: 'Source Quality',
-        value: analytics.qualityMetrics.sourceQuality,
-      },
-      {
-        metric: 'Engagement Level',
-        value: analytics.qualityMetrics.engagementLevel,
-      },
-    ];
-  }, [analytics.qualityMetrics]);
 
   return (
     <div className="space-y-8 p-8">
@@ -263,34 +273,37 @@ export function EnhancedDashboard({
           </div>
         </motion.div>
 
-        {/* Debate Network Graph */}
+        {/* Network Visualization */}
         <motion.div
           className="rounded-lg bg-white p-6 shadow-lg dark:bg-secondary-800"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <h2 className="mb-4 text-lg font-semibold">Debate Relationships</h2>
+          <h2 className="mb-4 text-lg font-semibold">Debate Network</h2>
           <div className="h-80">
             <ResponsiveNetwork
               data={debateNetworkData}
               margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-              linkDistance={(e: NetworkLink) => e.distance}
+              linkDistance={(e) => e.distance}
               centeringStrength={0.3}
               repulsivity={6}
-              nodeSize={(n: NetworkNode) => n.size}
-              activeNodeSize={(n: NetworkNode) => 1.5 * n.size}
-              nodeColor={(e: NetworkNode) => e.color}
+              nodeSize={(n) => n.size}
+              activeNodeSize={(n) => 1.5 * n.size}
+              nodeColor={(e) => e.color}
               nodeBorderWidth={1}
               nodeBorderColor={{
                 from: 'color',
                 modifiers: [['darker', 0.8]],
               }}
+              linkThickness={(l) => 2 + 2 * l.target.size}
+              linkBlendMode="multiply"
+              motionConfig="gentle"
             />
           </div>
         </motion.div>
 
-        {/* Quality Metrics Radar */}
+        {/* Quality Metrics Radar Chart */}
         <motion.div
           className="rounded-lg bg-white p-6 shadow-lg dark:bg-secondary-800"
           initial={{ opacity: 0, y: 20 }}
@@ -303,16 +316,26 @@ export function EnhancedDashboard({
               data={qualityMetricsData}
               keys={['value']}
               indexBy="metric"
-              maxValue={100}
-              margin={{ top: 20, right: 80, bottom: 20, left: 80 }}
+              maxValue="auto"
+              margin={{ top: 70, right: 80, bottom: 40, left: 80 }}
               curve="linearClosed"
               borderWidth={2}
               borderColor={{ from: 'color' }}
+              gridLevels={5}
+              gridShape="circular"
               gridLabelOffset={36}
+              enableDots={true}
               dotSize={10}
               dotColor={{ theme: 'background' }}
               dotBorderWidth={2}
-              motionConfig="wobbly"
+              dotBorderColor={{ from: 'color' }}
+              enableDotLabel={true}
+              dotLabel="value"
+              dotLabelYOffset={-12}
+              fillOpacity={0.25}
+              blendMode="multiply"
+              animate={true}
+              motionConfig="gentle"
               theme={{
                 dots: {
                   text: {

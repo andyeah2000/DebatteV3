@@ -58,6 +58,7 @@ export default function RegisterPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     let validation = { isValid: false, message: '' }
+    const password = (document.getElementById('password') as HTMLInputElement)?.value
 
     switch (name) {
       case 'username':
@@ -69,14 +70,12 @@ export default function RegisterPage() {
       case 'password':
         validation = validatePassword(value)
         break
-      case 'confirmPassword': {
-        const password = (document.getElementById('password') as HTMLInputElement)?.value
+      case 'confirmPassword':
         validation = {
           isValid: value === password,
           message: value === password ? '✓ Passwörter stimmen überein' : 'Passwörter stimmen nicht überein'
         }
         break
-      }
     }
 
     setValidationState(prev => ({
