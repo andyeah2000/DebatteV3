@@ -93,6 +93,9 @@ export const typeDefs = gql`
     upvotes: Int!
     downvotes: Int!
     sources: [Source!]!
+    isVerified: Boolean!
+    media: [Media!]!
+    metadata: CommentMetadata!
   }
 
   type Source {
@@ -182,5 +185,44 @@ export const typeDefs = gql`
     debate: Debate!
     isProVote: Boolean!
     createdAt: DateTime!
+  }
+
+  type Media {
+    id: ID!
+    type: String!
+    url: String!
+    title: String!
+    description: String
+  }
+
+  type CommentMetadata {
+    factCheck: CommentFactCheck!
+    aiAnalysis: CommentAIAnalysis!
+    argumentAnalysis: CommentArgumentAnalysis!
+  }
+
+  type CommentFactCheck {
+    suggestedSources: [String!]!
+    isFactual: Boolean!
+    corrections: [CommentCorrection!]
+  }
+
+  type CommentCorrection {
+    claim: String!
+    correction: String!
+  }
+
+  type CommentAIAnalysis {
+    argumentQuality: Float!
+    biasLevel: Float
+    factualAccuracy: Float
+    moderationConfidence: Float!
+  }
+
+  type CommentArgumentAnalysis {
+    hasThesis: Boolean!
+    hasLogicalFlow: Boolean!
+    hasEvidence: Boolean!
+    counterArgumentsAddressed: Boolean!
   }
 ` 

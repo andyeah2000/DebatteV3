@@ -366,6 +366,43 @@ export const resolvers = {
         [comment.debate_id]
       )
       return rows[0]
+    },
+
+    media: async (comment: any) => {
+      const { rows } = await pool.query(
+        'SELECT * FROM media WHERE comment_id = $1',
+        [comment.id]
+      )
+      return rows.map(media => ({
+        ...media,
+        type: media.type,
+        url: media.url,
+        title: media.title,
+        description: media.description
+      }))
+    },
+
+    metadata: async (comment: any) => {
+      const metadata = comment.metadata || {
+        factCheck: {
+          suggestedSources: [],
+          isFactual: true,
+          corrections: []
+        },
+        aiAnalysis: {
+          argumentQuality: 0,
+          biasLevel: 0,
+          factualAccuracy: 0,
+          moderationConfidence: 0
+        },
+        argumentAnalysis: {
+          hasThesis: false,
+          hasLogicalFlow: false,
+          hasEvidence: false,
+          counterArgumentsAddressed: false
+        }
+      }
+      return metadata
     }
   }
 }
