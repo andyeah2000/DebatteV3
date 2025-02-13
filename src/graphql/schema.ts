@@ -11,6 +11,16 @@ export const typeDefs = gql`
     updatedAt: String!
   }
 
+  type Topic {
+    id: ID!
+    title: String!
+    description: String
+    category: String!
+    trend: String!
+    debateCount: Int!
+    debates: [Debate!]!
+  }
+
   type Debate {
     id: ID!
     title: String!
@@ -32,6 +42,7 @@ export const typeDefs = gql`
     phases: [DebatePhase!]!
     currentPhase: String!
     metadata: DebateMetadata
+    topics: [Topic!]!
   }
 
   type DebateMetadata {
@@ -112,7 +123,8 @@ export const typeDefs = gql`
       tags: [String!]
     ): [Debate!]!
     featuredDebates: [Debate!]!
-    trendingTopics: [String!]!
+    trendingTopics: [Topic!]!
+    topic(id: ID!): Topic
   }
 
   type Mutation {

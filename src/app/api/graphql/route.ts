@@ -12,18 +12,21 @@ const schema = makeExecutableSchema({
 
 const { handleRequest } = createYoga({
   schema,
-  // Yoga needs to know how to create a valid Response object
   fetchAPI: { Response: NextResponse },
   graphqlEndpoint: '/api/graphql',
   context: createContext,
+  landingPage: false,
+  graphiql: process.env.NODE_ENV === 'development'
 })
 
-export async function POST(request: NextRequest, ctx: any) {
-  return handleRequest(request, ctx)
+export async function POST(request: NextRequest) {
+  const response = await handleRequest(request, { req: request, res: new NextResponse() })
+  return response
 }
 
-export async function GET(request: NextRequest, ctx: any) {
-  return handleRequest(request, ctx)
+export async function GET(request: NextRequest) {
+  const response = await handleRequest(request, { req: request, res: new NextResponse() })
+  return response
 }
 
 // Enable CORS

@@ -9,6 +9,17 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Topics table
+CREATE TABLE IF NOT EXISTS topics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  category VARCHAR(100) NOT NULL,
+  trend VARCHAR(50) DEFAULT 'neutral',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Debates table
 CREATE TABLE IF NOT EXISTS debates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,6 +34,14 @@ CREATE TABLE IF NOT EXISTS debates (
   tags TEXT[] DEFAULT ARRAY[]::TEXT[],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Debate Topics junction table
+CREATE TABLE IF NOT EXISTS debate_topics (
+  debate_id UUID NOT NULL REFERENCES debates(id) ON DELETE CASCADE,
+  topic_id UUID NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (debate_id, topic_id)
 );
 
 -- Comments table
@@ -92,5 +111,10 @@ CREATE TRIGGER update_debates_updated_at
 
 CREATE TRIGGER update_comments_updated_at
     BEFORE UPDATE ON comments
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_topics_updated_at
+    BEFORE UPDATE ON topics
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column(); 

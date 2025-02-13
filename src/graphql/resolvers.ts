@@ -112,14 +112,31 @@ export const resolvers = {
 
     trendingTopics: async () => {
       const { rows } = await pool.query(`
-        SELECT UNNEST(tags) as tag, COUNT(*) as count
-        FROM debates
-        WHERE created_at > NOW() - INTERVAL '7 days'
-        GROUP BY tag
-        ORDER BY count DESC
+        SELECT 
+          t.id,
+          t.title,
+          t.description,
+          t.category,
+          t.trend,
+          COUNT(dt.debate_id) as debate_count
+        FROM topics t
+        LEFT JOIN debate_topics dt ON t.id = dt.topic_id
+        GROUP BY t.id, t.title, t.description, t.category, t.trend
+        ORDER BY debate_count DESC
         LIMIT 10
       `)
-      return rows.map(row => row.tag)
+      return rows.map(row => ({
+        ...row,
+        debateCount: parseInt(row.debate_count)
+      }))
+    },
+
+    topic: async (_: unknown, { id }: { id: string }) => {
+      const { rows } = await pool.query(
+        'SELECT * FROM topics WHERE id = $1',
+        [id]
+      )
+      return rows[0]
     }
   },
 
@@ -158,6 +175,16 @@ export const resolvers = {
     }
   },
 
+  Topic: {
+    debates: async (topic: any) => {
+      const { rows } = await pool.query(
+        'SELECT d.* FROM debates d JOIN debate_topics dt ON d.id = dt.debate_id WHERE dt.topic_id = $1',
+        [topic.id]
+      )
+      return rows
+    }
+  },
+
   Debate: {
     author: async (debate: any) => {
       const { rows } = await pool.query(
@@ -186,6 +213,14 @@ export const resolvers = {
     phases: async (debate: any) => {
       const { rows } = await pool.query(
         'SELECT * FROM debate_phases WHERE debate_id = $1 ORDER BY start_time ASC',
+        [debate.id]
+      )
+      return rows
+    },
+
+    topics: async (debate: any) => {
+      const { rows } = await pool.query(
+        'SELECT t.* FROM topics t JOIN debate_topics dt ON t.id = dt.topic_id WHERE dt.debate_id = $1',
         [debate.id]
       )
       return rows
