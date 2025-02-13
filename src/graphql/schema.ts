@@ -1,14 +1,16 @@
 import { gql } from 'graphql-tag'
 
 export const typeDefs = gql`
+  scalar DateTime
+
   type User {
     id: ID!
     email: String!
     username: String!
     avatarUrl: String
     roles: [String!]!
-    createdAt: String!
-    updatedAt: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Topic {
@@ -19,6 +21,9 @@ export const typeDefs = gql`
     trend: String!
     debateCount: Int!
     debates: [Debate!]!
+    relatedTopics: [Topic!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Debate {
@@ -27,8 +32,8 @@ export const typeDefs = gql`
     description: String!
     category: String!
     author: User!
-    createdAt: String!
-    updatedAt: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
     isActive: Boolean!
     isFeatured: Boolean!
     viewCount: Int!
@@ -63,7 +68,7 @@ export const typeDefs = gql`
   type TimelineEvent {
     id: ID!
     type: String!
-    timestamp: String!
+    timestamp: DateTime!
     userId: String
     content: String
     metadata: String
@@ -71,8 +76,8 @@ export const typeDefs = gql`
 
   type DebatePhase {
     name: String!
-    startTime: String!
-    endTime: String
+    startTime: DateTime!
+    endTime: DateTime
     isActive: Boolean!
     requirements: [String!]!
   }
@@ -83,8 +88,8 @@ export const typeDefs = gql`
     author: User!
     debate: Debate!
     isProArgument: Boolean!
-    createdAt: String!
-    updatedAt: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
     upvotes: Int!
     downvotes: Int!
     sources: [Source!]!
@@ -176,6 +181,6 @@ export const typeDefs = gql`
     user: User!
     debate: Debate!
     isProVote: Boolean!
-    createdAt: String!
+    createdAt: DateTime!
   }
 ` 

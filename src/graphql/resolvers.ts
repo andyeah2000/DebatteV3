@@ -1,6 +1,7 @@
 import { createPool } from '@vercel/postgres'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { GraphQLScalarType } from 'graphql'
 
 const pool = createPool({
   connectionString: process.env.POSTGRES_URL
@@ -41,7 +42,36 @@ interface CreateVoteInput {
   isProVote: boolean
 }
 
+// Custom DateTime scalar
+const dateTimeScalar = new GraphQLScalarType({
+  name: 'DateTime',
+  description: 'DateTime custom scalar type',
+  serialize(value: unknown): string | null {
+    if (value instanceof Date) {
+      return value.toISOString()
+    }
+    if (typeof value === 'string') {
+      return new Date(value).toISOString()
+    }
+    return null
+  },
+  parseValue(value: unknown): Date | null {
+    if (typeof value === 'string' || typeof value === 'number') {
+      return new Date(value)
+    }
+    return null
+  },
+  parseLiteral(ast): Date | null {
+    if (ast.kind === 'StringValue') {
+      return new Date(ast.value)
+    }
+    return null
+  },
+})
+
 export const resolvers = {
+  DateTime: dateTimeScalar,
+
   Query: {
     me: async (_: unknown, __: unknown, context: Context) => {
       const session = await getServerSession(authOptions)
@@ -118,16 +148,20 @@ export const resolvers = {
           t.description,
           t.category,
           t.trend,
+          t.created_at,
+          t.updated_at,
           COUNT(dt.debate_id) as debate_count
         FROM topics t
         LEFT JOIN debate_topics dt ON t.id = dt.topic_id
-        GROUP BY t.id, t.title, t.description, t.category, t.trend
+        GROUP BY t.id, t.title, t.description, t.category, t.trend, t.created_at, t.updated_at
         ORDER BY debate_count DESC
         LIMIT 10
       `)
       return rows.map(row => ({
         ...row,
-        debateCount: parseInt(row.debate_count)
+        debateCount: parseInt(row.debate_count),
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
       }))
     },
 
@@ -181,6 +215,19 @@ export const resolvers = {
         'SELECT d.* FROM debates d JOIN debate_topics dt ON d.id = dt.debate_id WHERE dt.topic_id = $1',
         [topic.id]
       )
+      return rows
+    },
+
+    relatedTopics: async (topic: any) => {
+      // Find topics that share debates with this topic
+      const { rows } = await pool.query(`
+        SELECT DISTINCT t.*
+        FROM topics t
+        JOIN debate_topics dt1 ON t.id = dt1.topic_id
+        JOIN debate_topics dt2 ON dt1.debate_id = dt2.debate_id
+        WHERE dt2.topic_id = $1 AND t.id != $1
+        LIMIT 5
+      `, [topic.id])
       return rows
     }
   },
