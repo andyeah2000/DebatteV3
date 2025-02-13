@@ -121,7 +121,7 @@ export default function PrivacyPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            This Privacy Policy describes how Debattle ("we," "our," or "us") collects, uses, and
+            This Privacy Policy describes how Debattle (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) collects, uses, and
             shares your personal information when you use our platform. By using Debattle, you agree
             to the collection and use of information in accordance with this policy.
           </motion.p>

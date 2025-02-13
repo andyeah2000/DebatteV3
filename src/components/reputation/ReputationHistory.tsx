@@ -104,10 +104,10 @@ export function ReputationHistory({
               {event.context && (
                 <div className="mt-1 text-sm text-secondary-500 dark:text-secondary-400">
                   {event.context.debateTitle && (
-                    <span>in debate "{event.context.debateTitle}"</span>
+                    <span>in debate &quot;{event.context.debateTitle}&quot;</span>
                   )}
                   {event.context.commentContent && (
-                    <span>on comment "{event.context.commentContent.slice(0, 50)}..."</span>
+                    <span>on comment &quot;{event.context.commentContent.slice(0, 50)}...&quot;</span>
                   )}
                 </div>
               )}

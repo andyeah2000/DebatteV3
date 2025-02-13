@@ -122,49 +122,45 @@ export function ReputationProvider({ children }: ReputationProviderProps) {
   async function fetchReputationData() {
     if (!session?.user?.id) return
 
-    try {
-      const response = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `
-            query GetUserReputation($userId: ID!) {
-              user(id: $userId) {
-                reputationScore
-                debateScore
-                commentScore
-                sourceScore
-              }
+    const response = await fetch('/api/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `
+          query GetUserReputation($userId: ID!) {
+            user(id: $userId) {
+              reputationScore
+              debateScore
+              commentScore
+              sourceScore
             }
-          `,
-          variables: {
-            userId: session.user.id
           }
-        })
+        `,
+        variables: {
+          userId: session.user.id
+        }
       })
+    })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      if (data.errors) throw new Error(data.errors[0].message)
-
-      const { reputationScore, debateScore, commentScore, sourceScore } = data.data.user
-      setState(prev => ({
-        ...prev,
-        total: reputationScore,
-        debate: debateScore,
-        comment: commentScore,
-        source: sourceScore,
-        isLoading: false,
-        error: null
-      }))
-    } catch (error) {
-      throw error
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
+
+    const data = await response.json()
+    if (data.errors) throw new Error(data.errors[0].message)
+
+    const { reputationScore, debateScore, commentScore, sourceScore } = data.data.user
+    setState(prev => ({
+      ...prev,
+      total: reputationScore,
+      debate: debateScore,
+      comment: commentScore,
+      source: sourceScore,
+      isLoading: false,
+      error: null
+    }))
   }
 
   async function fetchBadges() {
