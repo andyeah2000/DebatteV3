@@ -134,6 +134,12 @@ export const resolvers = {
       )
       return rows.map(debate => ({
         ...debate,
+        createdAt: debate.created_at,
+        updatedAt: debate.updated_at,
+        isActive: debate.is_active,
+        isFeatured: debate.is_featured,
+        viewCount: debate.view_count,
+        participantsCount: debate.participants_count,
         qualityScore: calculateQualityScore(debate),
         sourceQualityScore: calculateSourceQualityScore(debate),
         currentPhase: calculateCurrentPhase(debate)
@@ -215,11 +221,26 @@ export const resolvers = {
         'SELECT d.* FROM debates d JOIN debate_topics dt ON d.id = dt.debate_id WHERE dt.topic_id = $1',
         [topic.id]
       )
-      return rows
+      return rows.map(debate => ({
+        ...debate,
+        createdAt: debate.created_at,
+        updatedAt: debate.updated_at,
+        isActive: debate.is_active,
+        isFeatured: debate.is_featured,
+        viewCount: debate.view_count,
+        participantsCount: debate.participants_count
+      }))
+    },
+
+    debateCount: async (topic: any) => {
+      const { rows } = await pool.query(
+        'SELECT COUNT(*) as count FROM debate_topics WHERE topic_id = $1',
+        [topic.id]
+      )
+      return parseInt(rows[0].count)
     },
 
     relatedTopics: async (topic: any) => {
-      // Find topics that share debates with this topic
       const { rows } = await pool.query(`
         SELECT DISTINCT t.*
         FROM topics t
@@ -228,7 +249,11 @@ export const resolvers = {
         WHERE dt2.topic_id = $1 AND t.id != $1
         LIMIT 5
       `, [topic.id])
-      return rows
+      return rows.map(topic => ({
+        ...topic,
+        createdAt: topic.created_at,
+        updatedAt: topic.updated_at
+      }))
     }
   },
 
