@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     container: {
@@ -18,15 +17,15 @@ module.exports = {
         background: "rgb(var(--background) / <alpha-value>)",
         foreground: "rgb(var(--foreground) / <alpha-value>)",
         primary: {
-          DEFAULT: "rgb(var(--color-primary) / <alpha-value>)",
+          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
           foreground: "rgb(var(--primary-foreground) / <alpha-value>)",
         },
         secondary: {
-          DEFAULT: "rgb(var(--color-secondary) / <alpha-value>)",
+          DEFAULT: "rgb(var(--secondary) / <alpha-value>)",
           foreground: "rgb(var(--secondary-foreground) / <alpha-value>)",
         },
         accent: {
-          DEFAULT: "rgb(var(--color-accent) / <alpha-value>)",
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
           foreground: "rgb(var(--accent-foreground) / <alpha-value>)",
         },
         destructive: {

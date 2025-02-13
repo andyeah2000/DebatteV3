@@ -1,6 +1,5 @@
 'use client'
 
-import { ThemeProvider } from 'next-themes'
 import { SessionProvider } from 'next-auth/react'
 import { ApolloClient, InMemoryCache, ApolloProvider, from } from '@apollo/client'
 import { MotionConfig } from 'framer-motion'
@@ -98,11 +97,9 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
       <ApolloProvider client={client}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <MotionConfig reducedMotion="user">
-            {children}
-          </MotionConfig>
-        </ThemeProvider>
+        <MotionConfig reducedMotion="user">
+          {children}
+        </MotionConfig>
       </ApolloProvider>
     </SessionProvider>
   )

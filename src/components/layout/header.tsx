@@ -7,12 +7,12 @@ import { motion } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/theme-toggle'
+import type { Route } from 'next'
 
 const navigation = [
-  { name: 'Home', href: '/' },
-  { name: 'Debates', href: '/debates' },
-  { name: 'About', href: '/about' },
+  { name: 'Home', href: '/' as Route },
+  { name: 'Debates', href: '/debates' as Route },
+  { name: 'About', href: '/about' as Route },
 ]
 
 export function Header() {
@@ -21,12 +21,12 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-secondary-200 bg-white/80 backdrop-blur-sm dark:border-secondary-800 dark:bg-secondary-900/80">
+    <header className="sticky top-0 z-50 w-full border-b border-secondary-200 bg-white/80 backdrop-blur-sm">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex flex-shrink-0 items-center">
-            <Link href="/" className="text-xl font-bold text-secondary-900 dark:text-white">
+            <Link href={'/' as Route} className="text-xl font-bold text-secondary-900">
               Debattle
             </Link>
           </div>
@@ -39,8 +39,8 @@ export function Header() {
                 href={item.href}
                 className={`text-sm font-medium ${
                   pathname === item.href
-                    ? 'text-primary-600 dark:text-primary-400'
-                    : 'text-secondary-600 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-white'
+                    ? 'text-primary-600'
+                    : 'text-secondary-600 hover:text-secondary-900'
                 }`}
               >
                 {item.name}
@@ -50,19 +50,18 @@ export function Header() {
 
           {/* Desktop Right Section */}
           <div className="hidden items-center justify-end md:flex md:flex-1 lg:w-0">
-            <ThemeToggle className="mr-4" />
             {session ? (
               <div className="flex items-center space-x-4">
                 <Link
-                  href="/debates/new"
-                  className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                  href={'/debates/new' as Route}
+                  className="text-sm font-medium text-primary-600 hover:text-primary-700"
                 >
                   Start Debate
                 </Link>
-                <Link href="/settings" className="text-sm font-medium text-secondary-600 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-white">
+                <Link href={'/settings' as Route} className="text-sm font-medium text-secondary-600 hover:text-secondary-900">
                   Settings
                 </Link>
-                <Link href={`/users/${session.user.id}`}>
+                <Link href={`/users/${session.user.id}` as Route}>
                   <Image
                     className="rounded-full"
                     src={session.user.image || `https://ui-avatars.com/api/?name=${session.user.name}`}
@@ -81,10 +80,10 @@ export function Header() {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link href="/login">
+                <Link href={'/login' as Route}>
                   <Button variant="ghost">Sign in</Button>
                 </Link>
-                <Link href="/register">
+                <Link href={'/register' as Route}>
                   <Button>Sign up</Button>
                 </Link>
               </div>
@@ -93,10 +92,9 @@ export function Header() {
 
           {/* Mobile menu button */}
           <div className="flex items-center md:hidden">
-            <ThemeToggle className="mr-2" />
             <button
               type="button"
-              className="inline-flex items-center justify-center rounded-md p-2 text-secondary-400 hover:bg-secondary-100 hover:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 dark:hover:bg-secondary-800"
+              className="inline-flex items-center justify-center rounded-md p-2 text-secondary-400 hover:bg-secondary-100 hover:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               <span className="sr-only">Open main menu</span>
@@ -114,80 +112,62 @@ export function Header() {
         </div>
 
         {/* Mobile menu */}
-        <motion.div
-          className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'}`}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-        >
-          <div className="space-y-1 pb-3 pt-2">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`block px-3 py-2 text-base font-medium ${
-                  pathname === item.href
-                    ? 'text-primary-600 dark:text-primary-400'
-                    : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 dark:text-secondary-400 dark:hover:bg-secondary-800 dark:hover:text-white'
-                }`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
-            {session ? (
-              <>
+        {isMobileMenuOpen && (
+          <div className="md:hidden">
+            <div className="space-y-1 px-2 pb-3 pt-2">
+              {navigation.map((item) => (
                 <Link
-                  href="/debates/new"
-                  className="block px-3 py-2 text-base font-medium text-primary-600 hover:bg-secondary-50 dark:text-primary-400 dark:hover:bg-secondary-800"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  key={item.name}
+                  href={item.href}
+                  className={`block rounded-md px-3 py-2 text-base font-medium ${
+                    pathname === item.href
+                      ? 'bg-primary-50 text-primary-600'
+                      : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'
+                  }`}
                 >
-                  Start Debate
+                  {item.name}
                 </Link>
-                <Link
-                  href="/settings"
-                  className="block px-3 py-2 text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 dark:text-secondary-400 dark:hover:bg-secondary-800 dark:hover:text-white"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Settings
-                </Link>
-                <Link
-                  href={`/users/${session.user.id}`}
-                  className="block px-3 py-2 text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 dark:text-secondary-400 dark:hover:bg-secondary-800 dark:hover:text-white"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Profile
-                </Link>
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false)
-                    signOut()
-                  }}
-                  className="block w-full px-3 py-2 text-left text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 dark:text-secondary-400 dark:hover:bg-secondary-800 dark:hover:text-white"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="block px-3 py-2 text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 dark:text-secondary-400 dark:hover:bg-secondary-800 dark:hover:text-white"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/register"
-                  className="block px-3 py-2 text-base font-medium text-primary-600 hover:bg-secondary-50 dark:text-primary-400 dark:hover:bg-secondary-800"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Sign up
-                </Link>
-              </>
-            )}
+              ))}
+              {session ? (
+                <>
+                  <Link
+                    href={'/debates/new' as Route}
+                    className="block rounded-md px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 hover:text-primary-700"
+                  >
+                    Start Debate
+                  </Link>
+                  <Link
+                    href={'/settings' as Route}
+                    className="block rounded-md px-3 py-2 text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900"
+                  >
+                    Settings
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={'/login' as Route}
+                    className="block rounded-md px-3 py-2 text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href={'/register' as Route}
+                    className="block rounded-md px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 hover:text-primary-700"
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
-        </motion.div>
+        )}
       </nav>
     </header>
   )
