@@ -15,6 +15,5 @@
       "NEXT_TELEMETRY_DISABLED": "1"
     }
   },
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./src",
   "outputDirectory": ".next"
 } 
