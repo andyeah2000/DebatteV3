@@ -228,7 +228,10 @@ export const resolvers = {
         isActive: debate.is_active,
         isFeatured: debate.is_featured,
         viewCount: debate.view_count,
-        participantsCount: debate.participants_count
+        participantsCount: debate.participants_count,
+        qualityScore: calculateQualityScore(debate),
+        sourceQualityScore: calculateSourceQualityScore(debate),
+        currentPhase: calculateCurrentPhase(debate)
       }))
     },
 
@@ -279,7 +282,14 @@ export const resolvers = {
         'SELECT * FROM timeline_events WHERE debate_id = $1 ORDER BY timestamp ASC',
         [debate.id]
       )
-      return rows
+      return rows.map(event => ({
+        ...event,
+        timestamp: event.timestamp,
+        userId: event.user_id,
+        type: event.type,
+        content: event.content,
+        metadata: event.metadata
+      }))
     },
 
     phases: async (debate: any) => {
@@ -287,7 +297,14 @@ export const resolvers = {
         'SELECT * FROM debate_phases WHERE debate_id = $1 ORDER BY start_time ASC',
         [debate.id]
       )
-      return rows
+      return rows.map(phase => ({
+        ...phase,
+        startTime: phase.start_time,
+        endTime: phase.end_time,
+        isActive: phase.is_active,
+        name: phase.name,
+        requirements: phase.requirements || []
+      }))
     },
 
     topics: async (debate: any) => {
