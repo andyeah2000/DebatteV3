@@ -100,5 +100,10 @@
     "react"
   ],
   "author": "Debattle Team",
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "typeorm": {
+      "redis": "4.7.0"
+    }
+  }
 }
