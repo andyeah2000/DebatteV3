@@ -105,6 +105,7 @@ export const resolvers = {
           ...rows[0],
           createdAt: rows[0].created_at || null,
           updatedAt: rows[0].updated_at || null,
+          scheduledEndTime: rows[0].scheduled_end_time || null,
           isActive: rows[0].is_active || false,
           isFeatured: rows[0].is_featured || false,
           viewCount: rows[0].view_count || 0,

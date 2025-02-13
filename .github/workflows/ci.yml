@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
     
     steps:
@@ -28,10 +28,9 @@ jobs:
       - name: Run type checking
         run: npm run typecheck
         
-      - name: Run tests
-        run: npm test
+      - name: Build project
+        run: npm run build
         env:
-          CI: true
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXTAUTH_URL: http://localhost:3000

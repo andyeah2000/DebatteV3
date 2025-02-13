@@ -34,6 +34,7 @@ export const typeDefs = gql`
     author: User!
     createdAt: DateTime!
     updatedAt: DateTime!
+    scheduledEndTime: DateTime
     isActive: Boolean!
     isFeatured: Boolean!
     viewCount: Int!
