@@ -43,35 +43,38 @@ export const authOptions: NextAuthOptions = {
         }
         
         try {
-          const res = await fetch('/api/graphql', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-              query: `
-                mutation Login($loginInput: LoginInput!) {
-                  login(loginInput: $loginInput) {
-                    user {
-                      id
-                      email
-                      username
-                      avatarUrl
-                      roles
-                    }
-                    token
-                  }
-                }
-              `,
-              variables: {
-                loginInput: {
-                  email: credentials.email,
-                  password: credentials.password,
-                },
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/graphql`,
+            {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
               },
-            }),
-          })
+              body: JSON.stringify({
+                query: `
+                  mutation Login($loginInput: LoginInput!) {
+                    login(loginInput: $loginInput) {
+                      user {
+                        id
+                        email
+                        username
+                        avatarUrl
+                        roles
+                      }
+                      token
+                    }
+                  }
+                `,
+                variables: {
+                  loginInput: {
+                    email: credentials.email,
+                    password: credentials.password,
+                  },
+                },
+              }),
+            }
+          )
 
           if (!res.ok) {
             throw new Error('Failed to authenticate')

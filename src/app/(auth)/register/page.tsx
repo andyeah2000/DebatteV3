@@ -10,6 +10,7 @@ import { Mail, Lock, User, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { cn } from '@/lib/utils'
+import type { Route } from 'next'
 
 // Dynamically import social buttons
 const SocialButtons = dynamic(() => import('@/components/auth/SocialButtons'), {
@@ -150,17 +151,20 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        }),
-      })
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      )
 
       const data = await response.json()
 
@@ -168,18 +172,8 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Registration failed')
       }
 
-      // Sign in the user after successful registration
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        throw new Error(result.error)
-      }
-
-      router.push('/verify-email')
+      // Redirect to email verification page
+      router.push('/verify-email' as Route)
     } catch (error) {
       console.error('Registration error:', error)
       setError(error instanceof Error ? error.message : 'Registration failed')
@@ -189,12 +183,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/5">
       <div className="container relative flex min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-          <div className="absolute inset-0 bg-secondary/60" />
+        <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
+          <div className="absolute inset-0 bg-zinc-900" />
           <div className="relative z-20 flex items-center text-lg font-medium">
-            <Link href="/">Debattle</Link>
+            <Link href="/" className="flex items-center">
+              <span className="text-xl font-bold">Debattle</span>
+            </Link>
           </div>
           <motion.div 
             className="relative z-20 mt-auto"
@@ -206,11 +202,11 @@ export default function RegisterPage() {
               <p className="text-lg">
                 "Join our community of engaged citizens and contribute to meaningful political discourse."
               </p>
-              <footer className="text-sm">Debattle Community</footer>
+              <footer className="text-sm text-zinc-400">Debattle Community</footer>
             </blockquote>
           </motion.div>
         </div>
-        <div className="lg:p-8">
+        <div className="p-4 lg:p-8">
           <motion.div
             className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]"
             variants={fadeIn}
@@ -232,7 +228,7 @@ export default function RegisterPage() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <div className="flex">
+                  <div className="flex items-center">
                     <XCircle className="h-5 w-5 flex-shrink-0" />
                     <p className="ml-2">{error}</p>
                   </div>
@@ -248,11 +244,11 @@ export default function RegisterPage() {
                     placeholder="Username"
                     autoComplete="username"
                     required
-                    icon={<User className="h-4 w-4" />}
+                    icon={<User className="h-4 w-4 text-muted-foreground" />}
                     value={formData.username}
                     onChange={handleInputChange}
                     className={cn(
-                      "bg-white/50 backdrop-blur-sm",
+                      "bg-background border-input",
                       validationState.username.isValid && "border-green-500 focus-visible:ring-green-500"
                     )}
                   />
@@ -278,11 +274,11 @@ export default function RegisterPage() {
                     placeholder="Email"
                     autoComplete="email"
                     required
-                    icon={<Mail className="h-4 w-4" />}
+                    icon={<Mail className="h-4 w-4 text-muted-foreground" />}
                     value={formData.email}
                     onChange={handleInputChange}
                     className={cn(
-                      "bg-white/50 backdrop-blur-sm",
+                      "bg-background border-input",
                       validationState.email.isValid && "border-green-500 focus-visible:ring-green-500"
                     )}
                   />
@@ -308,11 +304,11 @@ export default function RegisterPage() {
                     placeholder="Password"
                     autoComplete="new-password"
                     required
-                    icon={<Lock className="h-4 w-4" />}
+                    icon={<Lock className="h-4 w-4 text-muted-foreground" />}
                     value={formData.password}
                     onChange={handleInputChange}
                     className={cn(
-                      "bg-white/50 backdrop-blur-sm",
+                      "bg-background border-input",
                       validationState.password.isValid && "border-green-500 focus-visible:ring-green-500"
                     )}
                   />
@@ -338,11 +334,11 @@ export default function RegisterPage() {
                     placeholder="Confirm password"
                     autoComplete="new-password"
                     required
-                    icon={<Lock className="h-4 w-4" />}
+                    icon={<Lock className="h-4 w-4 text-muted-foreground" />}
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     className={cn(
-                      "bg-white/50 backdrop-blur-sm",
+                      "bg-background border-input",
                       validationState.confirmPassword.isValid && "border-green-500 focus-visible:ring-green-500"
                     )}
                   />
@@ -363,7 +359,7 @@ export default function RegisterPage() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full bg-primary hover:bg-primary/90"
                 disabled={isLoading}
                 size="lg"
               >
@@ -380,7 +376,7 @@ export default function RegisterPage() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
@@ -395,7 +391,7 @@ export default function RegisterPage() {
               Already have an account?{' '}
               <Link 
                 href="/login" 
-                className="underline underline-offset-4 hover:text-primary"
+                className="font-medium text-primary underline underline-offset-4 hover:text-primary/90"
               >
                 Sign in
               </Link>
