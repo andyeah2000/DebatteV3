@@ -21,10 +21,15 @@ interface Debate {
   }
   createdAt: string
   participantsCount: number
-  proVotes: number
-  conVotes: number
   tags: string[]
   viewCount: number
+  voteStatistics: {
+    totalVotes: number
+    proVotes: number
+    conVotes: number
+    proPercentage: number
+    conPercentage: number
+  }
 }
 
 const CATEGORIES = [
@@ -74,14 +79,20 @@ export default function DebatesPage() {
 
   useEffect(() => {
     if (data?.debates) {
+      const formattedDebates = data.debates.map((debate: any) => ({
+        ...debate,
+        createdAt: new Date(debate.createdAt).toISOString()
+      }));
+      
       if (page === 1) {
-        setDebates(data.debates);
+        setDebates(formattedDebates);
       } else {
-        setDebates(prev => [...prev, ...data.debates]);
+        setDebates(prev => [...prev, ...formattedDebates]);
       }
       setHasMore(data.debates.length === 10);
+      setIsLoading(false);
     }
-  }, [data]);
+  }, [data, page]);
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -217,10 +228,10 @@ export default function DebatesPage() {
                     <span>{debate.viewCount} views</span>
                     <div className="flex items-center gap-4">
                       <span className="text-green-600 dark:text-green-400">
-                        {debate.proVotes} pros
+                        {debate.voteStatistics.proVotes} pros
                       </span>
                       <span className="text-red-600 dark:text-red-400">
-                        {debate.conVotes} cons
+                        {debate.voteStatistics.conVotes} cons
                       </span>
                     </div>
                   </div>

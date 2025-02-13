@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const CREATE_DEBATE = gql`
   mutation CreateDebate($input: CreateDebateInput!) {
-    createDebate(createDebateInput: $input) {
+    createDebate(input: $input) {
       id
       title
       description
@@ -12,6 +12,8 @@ export const CREATE_DEBATE = gql`
         username
         avatarUrl
       }
+      createdAt
+      tags
     }
   }
 `
