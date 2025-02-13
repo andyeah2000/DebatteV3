@@ -112,8 +112,8 @@ export class VotesService {
       totalVotes,
       proVotes: debate.proVotes,
       conVotes: debate.conVotes,
-      proPercentage: totalVotes > 0 ? (debate.proVotes / totalVotes) * 100 : 0,
-      conPercentage: totalVotes > 0 ? (debate.conVotes / totalVotes) * 100 : 0,
+      proPercentage: totalVotes > 0 ? Number((debate.proVotes / totalVotes * 100).toFixed(1)) : 0,
+      conPercentage: totalVotes > 0 ? Number((debate.conVotes / totalVotes * 100).toFixed(1)) : 0,
     };
   }
 

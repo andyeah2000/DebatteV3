@@ -680,7 +680,7 @@ export default function DebateDetailPage() {
                     Pro
                   </span>
                   <span className="text-sm text-secondary-500">
-                    {apolloDebate.voteStatistics.proPercentage}%
+                    {Number(apolloDebate.voteStatistics.proPercentage).toFixed(1)}%
                   </span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-secondary-200 dark:bg-secondary-700">
@@ -696,7 +696,7 @@ export default function DebateDetailPage() {
                     Con
                   </span>
                   <span className="text-sm text-secondary-500">
-                    {apolloDebate.voteStatistics.conPercentage}%
+                    {Number(apolloDebate.voteStatistics.conPercentage).toFixed(1)}%
                   </span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-secondary-200 dark:bg-secondary-700">

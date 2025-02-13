@@ -423,8 +423,8 @@ export const resolvers = {
           totalVotes: total,
           proVotes: pro,
           conVotes: con,
-          proPercentage: total > 0 ? (pro / total) * 100 : 0,
-          conPercentage: total > 0 ? (con / total) * 100 : 0
+          proPercentage: total > 0 ? Number((pro / total * 100).toFixed(1)) : 0,
+          conPercentage: total > 0 ? Number((con / total * 100).toFixed(1)) : 0
         }
       } catch (error) {
         console.error('Error in debate.voteStatistics resolver:', error)
