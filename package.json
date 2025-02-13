@@ -26,6 +26,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "crypto-browserify": "^3.12.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^11.18.2",
     "graphql": "^16.8.1",
@@ -37,6 +38,7 @@
     "next-themes": "^0.4.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "stream-browserify": "^3.0.0",
     "tailwind-merge": "^3.0.1",
     "tailwindcss": "^3.4.17",
     "web-vitals": "^4.2.4",
@@ -54,7 +56,8 @@
     "eslint-plugin-react": "^7.33.2",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.3"
   },
   "overrides": {
     "punycode": "2.1.1",
@@ -65,13 +68,17 @@
     "glob": "^10.3.10",
     "rimraf": "^5.0.5",
     "inflight": "^2.0.0",
-    "eslint": "^8.57.1"
+    "eslint": "^8.57.1",
+    "crypto-browserify": "^3.12.0",
+    "stream-browserify": "^3.0.0"
   },
   "resolutions": {
     "glob": "^10.3.10",
     "rimraf": "^5.0.5",
     "inflight": "^2.0.0",
-    "eslint": "^8.57.1"
+    "eslint": "^8.57.1",
+    "crypto-browserify": "^3.12.0",
+    "stream-browserify": "^3.0.0"
   },
   "description": "A fact-based platform for meaningful political debates and discussions. Built with Next.js, TypeScript, and modern web technologies.",
   "main": "tailwind.config.js",
