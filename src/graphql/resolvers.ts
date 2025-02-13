@@ -89,18 +89,24 @@ export const resolvers = {
         'SELECT * FROM debates WHERE id = $1',
         [id]
       )
-      const debate = rows[0]
-      if (!debate) return null
+      if (!rows[0]) return null
 
-      // Add computed fields
-      debate.qualityScore = calculateQualityScore(debate)
-      debate.sourceQualityScore = calculateSourceQualityScore(debate)
-      debate.currentPhase = calculateCurrentPhase(debate)
-      
-      return debate
+      return {
+        ...rows[0],
+        createdAt: rows[0].created_at,
+        updatedAt: rows[0].updated_at,
+        isActive: rows[0].is_active,
+        isFeatured: rows[0].is_featured,
+        viewCount: rows[0].view_count,
+        participantsCount: rows[0].participants_count,
+        authorId: rows[0].author_id,
+        qualityScore: calculateQualityScore(rows[0]),
+        sourceQualityScore: calculateSourceQualityScore(rows[0]),
+        currentPhase: calculateCurrentPhase(rows[0])
+      }
     },
 
-    debates: async (_: unknown, { skip = 0, take = 10, orderBy = 'createdAt', searchTerm, tags }: QueryArgs) => {
+    debates: async (_: unknown, { skip = 0, take = 10, orderBy = 'created_at', searchTerm, tags }: QueryArgs) => {
       let query = 'SELECT * FROM debates'
       const params = []
       
@@ -122,6 +128,13 @@ export const resolvers = {
       const { rows } = await pool.query(query, params)
       return rows.map(debate => ({
         ...debate,
+        createdAt: debate.created_at,
+        updatedAt: debate.updated_at,
+        isActive: debate.is_active,
+        isFeatured: debate.is_featured,
+        viewCount: debate.view_count,
+        participantsCount: debate.participants_count,
+        authorId: debate.author_id,
         qualityScore: calculateQualityScore(debate),
         sourceQualityScore: calculateSourceQualityScore(debate),
         currentPhase: calculateCurrentPhase(debate)
@@ -140,6 +153,7 @@ export const resolvers = {
         isFeatured: debate.is_featured,
         viewCount: debate.view_count,
         participantsCount: debate.participants_count,
+        authorId: debate.author_id,
         qualityScore: calculateQualityScore(debate),
         sourceQualityScore: calculateSourceQualityScore(debate),
         currentPhase: calculateCurrentPhase(debate)
@@ -229,6 +243,7 @@ export const resolvers = {
         isFeatured: debate.is_featured,
         viewCount: debate.view_count,
         participantsCount: debate.participants_count,
+        authorId: debate.author_id,
         qualityScore: calculateQualityScore(debate),
         sourceQualityScore: calculateSourceQualityScore(debate),
         currentPhase: calculateCurrentPhase(debate)
@@ -357,7 +372,12 @@ export const resolvers = {
         'SELECT * FROM users WHERE id = $1',
         [comment.author_id]
       )
-      return rows[0]
+      return {
+        ...rows[0],
+        createdAt: rows[0].created_at,
+        updatedAt: rows[0].updated_at,
+        avatarUrl: rows[0].avatar_url
+      }
     },
 
     debate: async (comment: any) => {
@@ -365,7 +385,19 @@ export const resolvers = {
         'SELECT * FROM debates WHERE id = $1',
         [comment.debate_id]
       )
-      return rows[0]
+      return {
+        ...rows[0],
+        createdAt: rows[0].created_at,
+        updatedAt: rows[0].updated_at,
+        isActive: rows[0].is_active,
+        isFeatured: rows[0].is_featured,
+        viewCount: rows[0].view_count,
+        participantsCount: rows[0].participants_count,
+        authorId: rows[0].author_id,
+        qualityScore: calculateQualityScore(rows[0]),
+        sourceQualityScore: calculateSourceQualityScore(rows[0]),
+        currentPhase: calculateCurrentPhase(rows[0])
+      }
     },
 
     media: async (comment: any) => {
