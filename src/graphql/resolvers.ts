@@ -85,60 +85,70 @@ export const resolvers = {
     },
 
     debate: async (_: unknown, { id }: QueryArgs) => {
-      const { rows } = await pool.query(
-        'SELECT * FROM debates WHERE id = $1',
-        [id]
-      )
-      if (!rows[0]) return null
+      try {
+        const { rows } = await pool.query(
+          'SELECT * FROM debates WHERE id = $1',
+          [id]
+        )
+        if (!rows[0]) return null
 
-      return {
-        ...rows[0],
-        createdAt: rows[0].created_at,
-        updatedAt: rows[0].updated_at,
-        isActive: rows[0].is_active,
-        isFeatured: rows[0].is_featured,
-        viewCount: rows[0].view_count,
-        participantsCount: rows[0].participants_count,
-        authorId: rows[0].author_id,
-        qualityScore: calculateQualityScore(rows[0]),
-        sourceQualityScore: calculateSourceQualityScore(rows[0]),
-        currentPhase: calculateCurrentPhase(rows[0])
+        return {
+          ...rows[0],
+          createdAt: rows[0].created_at || null,
+          updatedAt: rows[0].updated_at || null,
+          isActive: rows[0].is_active || false,
+          isFeatured: rows[0].is_featured || false,
+          viewCount: rows[0].view_count || 0,
+          participantsCount: rows[0].participants_count || 0,
+          authorId: rows[0].author_id,
+          qualityScore: calculateQualityScore(rows[0]),
+          sourceQualityScore: calculateSourceQualityScore(rows[0]),
+          currentPhase: calculateCurrentPhase(rows[0])
+        }
+      } catch (error) {
+        console.error('Error in debate query:', error)
+        throw new Error('Failed to fetch debate')
       }
     },
 
     debates: async (_: unknown, { skip = 0, take = 10, orderBy = 'created_at', searchTerm, tags }: QueryArgs) => {
-      let query = 'SELECT * FROM debates'
-      const params = []
-      
-      if (searchTerm) {
-        query += ' WHERE title ILIKE $1 OR description ILIKE $1'
-        params.push(`%${searchTerm}%`)
+      try {
+        let query = 'SELECT * FROM debates'
+        const params = []
+        
+        if (searchTerm) {
+          query += ' WHERE title ILIKE $1 OR description ILIKE $1'
+          params.push(`%${searchTerm}%`)
+        }
+        
+        if (tags && tags.length > 0) {
+          const tagCondition = tags.map((_: string, i: number) => `$${params.length + i + 1} = ANY(tags)`).join(' OR ')
+          query += params.length ? ' AND' : ' WHERE'
+          query += ` (${tagCondition})`
+          params.push(...tags)
+        }
+        
+        query += ` ORDER BY ${orderBy} DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
+        params.push(take, skip)
+        
+        const { rows } = await pool.query(query, params)
+        return rows.map(debate => ({
+          ...debate,
+          createdAt: debate.created_at || null,
+          updatedAt: debate.updated_at || null,
+          isActive: debate.is_active || false,
+          isFeatured: debate.is_featured || false,
+          viewCount: debate.view_count || 0,
+          participantsCount: debate.participants_count || 0,
+          authorId: debate.author_id,
+          qualityScore: calculateQualityScore(debate),
+          sourceQualityScore: calculateSourceQualityScore(debate),
+          currentPhase: calculateCurrentPhase(debate)
+        }))
+      } catch (error) {
+        console.error('Error in debates query:', error)
+        throw new Error('Failed to fetch debates')
       }
-      
-      if (tags && tags.length > 0) {
-        const tagCondition = tags.map((_: string, i: number) => `$${params.length + i + 1} = ANY(tags)`).join(' OR ')
-        query += params.length ? ' AND' : ' WHERE'
-        query += ` (${tagCondition})`
-        params.push(...tags)
-      }
-      
-      query += ` ORDER BY ${orderBy} DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
-      params.push(take, skip)
-      
-      const { rows } = await pool.query(query, params)
-      return rows.map(debate => ({
-        ...debate,
-        createdAt: debate.created_at,
-        updatedAt: debate.updated_at,
-        isActive: debate.is_active,
-        isFeatured: debate.is_featured,
-        viewCount: debate.view_count,
-        participantsCount: debate.participants_count,
-        authorId: debate.author_id,
-        qualityScore: calculateQualityScore(debate),
-        sourceQualityScore: calculateSourceQualityScore(debate),
-        currentPhase: calculateCurrentPhase(debate)
-      }))
     },
 
     featuredDebates: async () => {
@@ -231,23 +241,28 @@ export const resolvers = {
 
   Topic: {
     debates: async (topic: any) => {
-      const { rows } = await pool.query(
-        'SELECT d.* FROM debates d JOIN debate_topics dt ON d.id = dt.debate_id WHERE dt.topic_id = $1',
-        [topic.id]
-      )
-      return rows.map(debate => ({
-        ...debate,
-        createdAt: debate.created_at,
-        updatedAt: debate.updated_at,
-        isActive: debate.is_active,
-        isFeatured: debate.is_featured,
-        viewCount: debate.view_count,
-        participantsCount: debate.participants_count,
-        authorId: debate.author_id,
-        qualityScore: calculateQualityScore(debate),
-        sourceQualityScore: calculateSourceQualityScore(debate),
-        currentPhase: calculateCurrentPhase(debate)
-      }))
+      try {
+        const { rows } = await pool.query(
+          'SELECT d.* FROM debates d JOIN debate_topics dt ON d.id = dt.debate_id WHERE dt.topic_id = $1',
+          [topic.id]
+        )
+        return rows.map(debate => ({
+          ...debate,
+          createdAt: debate.created_at || null,
+          updatedAt: debate.updated_at || null,
+          isActive: debate.is_active || false,
+          isFeatured: debate.is_featured || false,
+          viewCount: debate.view_count || 0,
+          participantsCount: debate.participants_count || 0,
+          authorId: debate.author_id,
+          qualityScore: calculateQualityScore(debate),
+          sourceQualityScore: calculateSourceQualityScore(debate),
+          currentPhase: calculateCurrentPhase(debate)
+        }))
+      } catch (error) {
+        console.error('Error in topic.debates resolver:', error)
+        return []
+      }
     },
 
     debateCount: async (topic: any) => {
@@ -277,11 +292,23 @@ export const resolvers = {
 
   Debate: {
     author: async (debate: any) => {
-      const { rows } = await pool.query(
-        'SELECT * FROM users WHERE id = $1',
-        [debate.author_id]
-      )
-      return rows[0]
+      try {
+        if (!debate.author_id) return null
+        const { rows } = await pool.query(
+          'SELECT * FROM users WHERE id = $1',
+          [debate.author_id]
+        )
+        if (!rows[0]) return null
+        return {
+          ...rows[0],
+          createdAt: rows[0].created_at || null,
+          updatedAt: rows[0].updated_at || null,
+          avatarUrl: rows[0].avatar_url || null
+        }
+      } catch (error) {
+        console.error('Error in debate.author resolver:', error)
+        throw new Error('Failed to fetch debate author')
+      }
     },
 
     comments: async (debate: any) => {
@@ -331,21 +358,32 @@ export const resolvers = {
     },
 
     voteStatistics: async (debate: any) => {
-      const { rows } = await pool.query(
-        'SELECT COUNT(*) as total, SUM(CASE WHEN is_pro_vote THEN 1 ELSE 0 END) as pro FROM votes WHERE debate_id = $1',
-        [debate.id]
-      )
-      
-      const total = parseInt(rows[0].total)
-      const pro = parseInt(rows[0].pro)
-      const con = total - pro
-      
-      return {
-        totalVotes: total,
-        proVotes: pro,
-        conVotes: con,
-        proPercentage: total > 0 ? (pro / total) * 100 : 0,
-        conPercentage: total > 0 ? (con / total) * 100 : 0
+      try {
+        const { rows } = await pool.query(
+          'SELECT COUNT(*) as total, SUM(CASE WHEN is_pro_vote THEN 1 ELSE 0 END) as pro FROM votes WHERE debate_id = $1',
+          [debate.id]
+        )
+        
+        const total = parseInt(rows[0].total) || 0
+        const pro = parseInt(rows[0].pro) || 0
+        const con = total - pro
+        
+        return {
+          totalVotes: total,
+          proVotes: pro,
+          conVotes: con,
+          proPercentage: total > 0 ? (pro / total) * 100 : 0,
+          conPercentage: total > 0 ? (con / total) * 100 : 0
+        }
+      } catch (error) {
+        console.error('Error in debate.voteStatistics resolver:', error)
+        return {
+          totalVotes: 0,
+          proVotes: 0,
+          conVotes: 0,
+          proPercentage: 0,
+          conPercentage: 0
+        }
       }
     },
 
@@ -368,15 +406,22 @@ export const resolvers = {
 
   Comment: {
     author: async (comment: any) => {
-      const { rows } = await pool.query(
-        'SELECT * FROM users WHERE id = $1',
-        [comment.author_id]
-      )
-      return {
-        ...rows[0],
-        createdAt: rows[0].created_at,
-        updatedAt: rows[0].updated_at,
-        avatarUrl: rows[0].avatar_url
+      try {
+        if (!comment.author_id) return null
+        const { rows } = await pool.query(
+          'SELECT * FROM users WHERE id = $1',
+          [comment.author_id]
+        )
+        if (!rows[0]) return null
+        return {
+          ...rows[0],
+          createdAt: rows[0].created_at || null,
+          updatedAt: rows[0].updated_at || null,
+          avatarUrl: rows[0].avatar_url || null
+        }
+      } catch (error) {
+        console.error('Error in comment.author resolver:', error)
+        throw new Error('Failed to fetch comment author')
       }
     },
 
