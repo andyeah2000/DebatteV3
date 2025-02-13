@@ -4,43 +4,28 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { motion } from 'framer-motion'
+import { Mail, Lock, User, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { cn } from '@/lib/utils'
 
 // Dynamically import social buttons
 const SocialButtons = dynamic(() => import('@/components/auth/SocialButtons'), {
   ssr: false,
   loading: () => (
     <div className="flex flex-col space-y-4">
-      <div className="h-10 w-full animate-pulse rounded bg-secondary-100 dark:bg-secondary-700" />
-      <div className="h-10 w-full animate-pulse rounded bg-secondary-100 dark:bg-secondary-700" />
+      <div className="h-10 w-full animate-pulse rounded bg-secondary/50" />
+      <div className="h-10 w-full animate-pulse rounded bg-secondary/50" />
     </div>
   ),
 })
 
-// Route type for type safety
-type AppRoutes = '/verify-email' | '/login' | '/'
-
-// Validation functions
-const validateUsername = (username: string) => {
-  if (!username) return { isValid: false, message: 'Username ist erforderlich' }
-  if (username.length < 3) return { isValid: false, message: 'Username muss mindestens 3 Zeichen haben' }
-  if (username.length > 30) return { isValid: false, message: 'Username darf maximal 30 Zeichen haben' }
-  return { isValid: true, message: '✓ Username ist gültig' }
-}
-
-const validateEmail = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!email) return { isValid: false, message: 'Email ist erforderlich' }
-  if (!emailRegex.test(email)) return { isValid: false, message: 'Bitte geben Sie eine gültige Email-Adresse ein' }
-  return { isValid: true, message: '✓ Email ist gültig' }
-}
-
-const validatePassword = (password: string) => {
-  if (!password) return { isValid: false, message: 'Passwort ist erforderlich' }
-  if (password.length < 8) return { isValid: false, message: 'Passwort muss mindestens 8 Zeichen haben' }
-  if (password.length > 50) return { isValid: false, message: 'Passwort darf maximal 50 Zeichen haben' }
-  return { isValid: true, message: '✓ Passwort ist gültig' }
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 20 }
 }
 
 interface ValidationState {
@@ -59,6 +44,12 @@ export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  })
   const [validationState, setValidationState] = useState<FormValidationState>({
     username: { isValid: false, message: '' },
     email: { isValid: false, message: '' },
@@ -66,11 +57,36 @@ export default function RegisterPage() {
     confirmPassword: { isValid: false, message: '' }
   })
 
+  const validateUsername = (username: string) => {
+    if (!username) return { isValid: false, message: 'Username is required' }
+    if (username.length < 3) return { isValid: false, message: 'Username must be at least 3 characters' }
+    if (username.length > 30) return { isValid: false, message: 'Username must be less than 30 characters' }
+    return { isValid: true, message: '✓ Username is valid' }
+  }
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email) return { isValid: false, message: 'Email is required' }
+    if (!emailRegex.test(email)) return { isValid: false, message: 'Please enter a valid email address' }
+    return { isValid: true, message: '✓ Email is valid' }
+  }
+
+  const validatePassword = (password: string) => {
+    if (!password) return { isValid: false, message: 'Password is required' }
+    if (password.length < 8) return { isValid: false, message: 'Password must be at least 8 characters' }
+    if (password.length > 50) return { isValid: false, message: 'Password must be less than 50 characters' }
+    if (!/[A-Z]/.test(password)) return { isValid: false, message: 'Password must contain at least one uppercase letter' }
+    if (!/[a-z]/.test(password)) return { isValid: false, message: 'Password must contain at least one lowercase letter' }
+    if (!/[0-9]/.test(password)) return { isValid: false, message: 'Password must contain at least one number' }
+    return { isValid: true, message: '✓ Password meets requirements' }
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    
     let validation: ValidationState = { isValid: false, message: '' }
-    const password = (document.getElementById('password') as HTMLInputElement)?.value
-
+    
     switch (name) {
       case 'username':
         validation = validateUsername(value)
@@ -81,21 +97,20 @@ export default function RegisterPage() {
       case 'password':
         validation = validatePassword(value)
         // Update confirm password validation when password changes
-        if (password) {
-          const confirmPassword = (document.getElementById('confirmPassword') as HTMLInputElement)?.value
+        if (formData.confirmPassword) {
           setValidationState(prev => ({
             ...prev,
             confirmPassword: {
-              isValid: confirmPassword === value,
-              message: confirmPassword === value ? '✓ Passwörter stimmen überein' : 'Passwörter stimmen nicht überein'
+              isValid: formData.confirmPassword === value,
+              message: formData.confirmPassword === value ? '✓ Passwords match' : 'Passwords do not match'
             }
           }))
         }
         break
       case 'confirmPassword':
         validation = {
-          isValid: value === password,
-          message: value === password ? '✓ Passwörter stimmen überein' : 'Passwörter stimmen nicht überein'
+          isValid: value === formData.password,
+          message: value === formData.password ? '✓ Passwords match' : 'Passwords do not match'
         }
         break
     }
@@ -111,19 +126,13 @@ export default function RegisterPage() {
     setIsLoading(true)
     setError('')
 
-    const formData = new FormData(event.currentTarget)
-    const username = formData.get('username') as string
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    const confirmPassword = formData.get('confirmPassword') as string
-
     // Validate all fields
-    const usernameValidation = validateUsername(username)
-    const emailValidation = validateEmail(email)
-    const passwordValidation = validatePassword(password)
+    const usernameValidation = validateUsername(formData.username)
+    const emailValidation = validateEmail(formData.email)
+    const passwordValidation = validatePassword(formData.password)
     const confirmPasswordValidation = {
-      isValid: password === confirmPassword,
-      message: password === confirmPassword ? '✓ Passwörter stimmen überein' : 'Passwörter stimmen nicht überein'
+      isValid: formData.password === formData.confirmPassword,
+      message: formData.password === formData.confirmPassword ? '✓ Passwords match' : 'Passwords do not match'
     }
 
     setValidationState({
@@ -136,7 +145,7 @@ export default function RegisterPage() {
     if (!usernameValidation.isValid || !emailValidation.isValid || 
         !passwordValidation.isValid || !confirmPasswordValidation.isValid) {
       setIsLoading(false)
-      setError('Bitte korrigieren Sie die markierten Felder')
+      setError('Please correct the highlighted fields')
       return
     }
 
@@ -147,9 +156,9 @@ export default function RegisterPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username,
-          email,
-          password,
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
         }),
       })
 
@@ -161,8 +170,8 @@ export default function RegisterPage() {
 
       // Sign in the user after successful registration
       const result = await signIn('credentials', {
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
         redirect: false,
       })
 
@@ -170,8 +179,7 @@ export default function RegisterPage() {
         throw new Error(result.error)
       }
 
-      // Use window.location for navigation after registration
-      window.location.href = '/verify-email'
+      router.push('/verify-email')
     } catch (error) {
       console.error('Registration error:', error)
       setError(error instanceof Error ? error.message : 'Registration failed')
@@ -181,156 +189,218 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-secondary-900 dark:text-white">
-          Create your account
-        </h2>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      <div className="container relative flex min-h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
+          <div className="absolute inset-0 bg-secondary/60" />
+          <div className="relative z-20 flex items-center text-lg font-medium">
+            <Link href="/">Debattle</Link>
+          </div>
+          <motion.div 
+            className="relative z-20 mt-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <blockquote className="space-y-2">
+              <p className="text-lg">
+                "Join our community of engaged citizens and contribute to meaningful political discourse."
+              </p>
+              <footer className="text-sm">Debattle Community</footer>
+            </blockquote>
+          </motion.div>
+        </div>
+        <div className="lg:p-8">
+          <motion.div
+            className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]"
+            variants={fadeIn}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <div className="flex flex-col space-y-2 text-center">
+              <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
+              <p className="text-sm text-muted-foreground">
+                Enter your details to get started
+              </p>
+            </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
-        <div className="bg-white px-6 py-8 shadow dark:bg-secondary-800 sm:rounded-lg sm:px-12">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/50">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <motion.div
+                  className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className="flex">
+                    <XCircle className="h-5 w-5 flex-shrink-0" />
+                    <p className="ml-2">{error}</p>
                   </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{error}</h3>
-                  </div>
+                </motion.div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="Username"
+                    autoComplete="username"
+                    required
+                    icon={<User className="h-4 w-4" />}
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    className={cn(
+                      "bg-white/50 backdrop-blur-sm",
+                      validationState.username.isValid && "border-green-500 focus-visible:ring-green-500"
+                    )}
+                  />
+                  {validationState.username.message && (
+                    <motion.p
+                      className={cn(
+                        "mt-1 text-xs",
+                        validationState.username.isValid ? "text-green-500" : "text-destructive"
+                      )}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      {validationState.username.message}
+                    </motion.p>
+                  )}
+                </div>
+
+                <div>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Email"
+                    autoComplete="email"
+                    required
+                    icon={<Mail className="h-4 w-4" />}
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={cn(
+                      "bg-white/50 backdrop-blur-sm",
+                      validationState.email.isValid && "border-green-500 focus-visible:ring-green-500"
+                    )}
+                  />
+                  {validationState.email.message && (
+                    <motion.p
+                      className={cn(
+                        "mt-1 text-xs",
+                        validationState.email.isValid ? "text-green-500" : "text-destructive"
+                      )}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      {validationState.email.message}
+                    </motion.p>
+                  )}
+                </div>
+
+                <div>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Password"
+                    autoComplete="new-password"
+                    required
+                    icon={<Lock className="h-4 w-4" />}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={cn(
+                      "bg-white/50 backdrop-blur-sm",
+                      validationState.password.isValid && "border-green-500 focus-visible:ring-green-500"
+                    )}
+                  />
+                  {validationState.password.message && (
+                    <motion.p
+                      className={cn(
+                        "mt-1 text-xs",
+                        validationState.password.isValid ? "text-green-500" : "text-destructive"
+                      )}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      {validationState.password.message}
+                    </motion.p>
+                  )}
+                </div>
+
+                <div>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm password"
+                    autoComplete="new-password"
+                    required
+                    icon={<Lock className="h-4 w-4" />}
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className={cn(
+                      "bg-white/50 backdrop-blur-sm",
+                      validationState.confirmPassword.isValid && "border-green-500 focus-visible:ring-green-500"
+                    )}
+                  />
+                  {validationState.confirmPassword.message && (
+                    <motion.p
+                      className={cn(
+                        "mt-1 text-xs",
+                        validationState.confirmPassword.isValid ? "text-green-500" : "text-destructive"
+                      )}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      {validationState.confirmPassword.message}
+                    </motion.p>
+                  )}
                 </div>
               </div>
-            )}
 
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-secondary-700 dark:text-secondary-200">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                required
-                onChange={handleInputChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
-                  validationState.username.isValid
-                    ? 'border-green-300 focus:border-green-500 focus:ring-green-500 dark:border-green-600'
-                    : 'border-secondary-300 focus:border-primary-500 focus:ring-primary-500 dark:border-secondary-600'
-                }`}
-              />
-              {validationState.username.message && (
-                <p className={`mt-1 text-sm ${
-                  validationState.username.isValid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {validationState.username.message}
-                </p>
-              )}
-            </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading}
+                size="lg"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  'Create account'
+                )}
+              </Button>
+            </form>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-secondary-700 dark:text-secondary-200">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                onChange={handleInputChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
-                  validationState.email.isValid
-                    ? 'border-green-300 focus:border-green-500 focus:ring-green-500 dark:border-green-600'
-                    : 'border-secondary-300 focus:border-primary-500 focus:ring-primary-500 dark:border-secondary-600'
-                }`}
-              />
-              {validationState.email.message && (
-                <p className={`mt-1 text-sm ${
-                  validationState.email.isValid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {validationState.email.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-secondary-700 dark:text-secondary-200">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                onChange={handleInputChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
-                  validationState.password.isValid
-                    ? 'border-green-300 focus:border-green-500 focus:ring-green-500 dark:border-green-600'
-                    : 'border-secondary-300 focus:border-primary-500 focus:ring-primary-500 dark:border-secondary-600'
-                }`}
-              />
-              {validationState.password.message && (
-                <p className={`mt-1 text-sm ${
-                  validationState.password.isValid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {validationState.password.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-secondary-700 dark:text-secondary-200">
-                Confirm password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                onChange={handleInputChange}
-                className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none focus:ring-1 sm:text-sm ${
-                  validationState.confirmPassword.isValid
-                    ? 'border-green-300 focus:border-green-500 focus:ring-green-500 dark:border-green-600'
-                    : 'border-secondary-300 focus:border-primary-500 focus:ring-primary-500 dark:border-secondary-600'
-                }`}
-              />
-              {validationState.confirmPassword.message && (
-                <p className={`mt-1 text-sm ${
-                  validationState.confirmPassword.isValid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {validationState.confirmPassword.message}
-                </p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create account'}
-            </Button>
-          </form>
-
-          <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-secondary-300 dark:border-secondary-600" />
+                <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-secondary-500 dark:bg-secondary-800 dark:text-secondary-400">
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
                   Or continue with
                 </span>
               </div>
             </div>
 
-            <div className="mt-6">
-              <SocialButtons isLoading={isLoading} />
-            </div>
-          </div>
+            <SocialButtons isLoading={isLoading} />
+
+            <p className="px-8 text-center text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <Link 
+                href="/login" 
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                Sign in
+              </Link>
+            </p>
+          </motion.div>
         </div>
       </div>
     </div>
