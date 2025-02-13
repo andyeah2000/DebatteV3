@@ -45,7 +45,7 @@ const retryLink = new RetryLink({
 
 const httpLink = new HttpLink({
   uri: '/api/graphql',
-  credentials: 'include',
+  credentials: 'same-origin',
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -59,7 +59,24 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const client = useMemo(() => new ApolloClient({
     link: from([errorLink, retryLink, httpLink]),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Query: {
+          fields: {
+            debates: {
+              merge(existing, incoming) {
+                return incoming
+              }
+            },
+            featuredDebates: {
+              merge(existing, incoming) {
+                return incoming
+              }
+            }
+          }
+        }
+      }
+    }),
     defaultOptions: {
       watchQuery: {
         fetchPolicy: 'cache-and-network',

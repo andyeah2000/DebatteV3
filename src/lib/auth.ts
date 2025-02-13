@@ -1,15 +1,31 @@
-import { NextAuthOptions } from 'next-auth'
+import { NextAuthOptions, Session, User } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import GithubProvider from 'next-auth/providers/github'
+import { JWT } from 'next-auth/jwt'
 
-const API_URL = process.env.API_URL || 'http://localhost:4000/graphql'
+interface ExtendedUser extends Omit<User, 'roles'> {
+  roles: string[]
+  accessToken: string
+}
+
+interface ExtendedSession extends Omit<Session, 'accessToken'> {
+  accessToken: string
+  roles: string[]
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
     GithubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
@@ -27,7 +43,7 @@ export const authOptions: NextAuthOptions = {
         }
         
         try {
-          const res = await fetch(API_URL, {
+          const res = await fetch('/api/graphql', {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
@@ -57,6 +73,10 @@ export const authOptions: NextAuthOptions = {
             }),
           })
 
+          if (!res.ok) {
+            throw new Error('Failed to authenticate')
+          }
+
           const data = await res.json()
           
           if (data.errors) {
@@ -76,47 +96,41 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.username,
             image: user.avatarUrl,
-            roles: user.roles,
-            accessToken: token,
-          }
+            roles: user.roles || [],
+            accessToken: token || '',
+          } as ExtendedUser
         } catch (error) {
           console.error('Auth error:', error)
-          throw error
+          throw new Error('Authentication failed. Please try again.')
         }
       }
     })
   ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   pages: {
     signIn: '/login',
-    signOut: '/login',
     error: '/login',
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.email = user.email
-        token.name = user.name
-        token.picture = user.image
-        token.roles = user.roles
-        token.accessToken = user.accessToken
+    async jwt({ token, user, account }) {
+      if (account && user) {
+        const extendedUser = user as ExtendedUser
+        token.accessToken = extendedUser.accessToken || account.access_token || ''
+        token.refreshToken = account.refresh_token
+        token.roles = extendedUser.roles
       }
       return token
     },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id
-        session.user.email = token.email
-        session.user.name = token.name
-        session.user.image = token.picture
-        session.user.roles = token.roles
-        session.accessToken = token.accessToken
+    async session({ session, token }): Promise<ExtendedSession> {
+      return {
+        ...session,
+        accessToken: token.accessToken as string || '',
+        roles: (token.roles as string[]) || []
       }
-      return session
-    }
-  },
-  session: {
-    strategy: 'jwt',
+    },
   },
   debug: process.env.NODE_ENV === 'development',
 } 

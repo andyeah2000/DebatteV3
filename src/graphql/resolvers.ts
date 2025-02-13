@@ -1,11 +1,7 @@
-import { createPool } from '@vercel/postgres'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { GraphQLScalarType } from 'graphql'
-
-const pool = createPool({
-  connectionString: process.env.POSTGRES_URL
-})
+import { query } from '@/lib/db'
 
 interface Context {
   session: any
@@ -86,16 +82,21 @@ export const resolvers = {
       const session = await getServerSession(authOptions)
       if (!session?.user) return null
       
-      const { rows } = await pool.query(
-        'SELECT * FROM users WHERE email = $1',
-        [session.user.email]
-      )
-      return rows[0]
+      try {
+        const { rows } = await query(
+          'SELECT * FROM users WHERE email = $1',
+          [session.user.email]
+        )
+        return rows[0]
+      } catch (error) {
+        console.error('Error in me query:', error)
+        throw new Error('Failed to fetch user data')
+      }
     },
 
     debate: async (_: unknown, { id }: QueryArgs) => {
       try {
-        const { rows } = await pool.query(
+        const { rows } = await query(
           'SELECT * FROM debates WHERE id = $1',
           [id]
         )
@@ -126,7 +127,7 @@ export const resolvers = {
         const { search, category, sortBy = 'created_at', page = 1, limit = 10, tags } = input || {}
         const offset = (page - 1) * limit
         
-        let query = 'SELECT * FROM debates'
+        let queryText = 'SELECT * FROM debates'
         const params = []
         const conditions = []
         
@@ -147,7 +148,7 @@ export const resolvers = {
         }
 
         if (conditions.length > 0) {
-          query += ' WHERE ' + conditions.join(' AND ')
+          queryText += ' WHERE ' + conditions.join(' AND ')
         }
         
         // Map sortBy values to database columns
@@ -158,10 +159,10 @@ export const resolvers = {
         }
         const orderByColumn = sortMapping[sortBy] || 'created_at'
         
-        query += ` ORDER BY ${orderByColumn} DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
+        queryText += ` ORDER BY ${orderByColumn} DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
         params.push(limit, offset)
         
-        const { rows } = await pool.query(query, params)
+        const { rows } = await query(queryText, params)
         return rows.map(debate => ({
           ...debate,
           createdAt: debate.created_at || null,
@@ -182,55 +183,70 @@ export const resolvers = {
     },
 
     featuredDebates: async () => {
-      const { rows } = await pool.query(
-        'SELECT * FROM debates WHERE is_featured = true ORDER BY created_at DESC LIMIT 5'
-      )
-      return rows.map(debate => ({
-        ...debate,
-        createdAt: debate.created_at,
-        updatedAt: debate.updated_at,
-        isActive: debate.is_active,
-        isFeatured: debate.is_featured,
-        viewCount: debate.view_count,
-        participantsCount: debate.participants_count,
-        authorId: debate.author_id,
-        qualityScore: calculateQualityScore(debate),
-        sourceQualityScore: calculateSourceQualityScore(debate),
-        currentPhase: calculateCurrentPhase(debate)
-      }))
+      try {
+        const { rows } = await query(
+          'SELECT * FROM debates WHERE is_featured = true ORDER BY created_at DESC LIMIT 5'
+        )
+        return rows.map(debate => ({
+          ...debate,
+          createdAt: debate.created_at,
+          updatedAt: debate.updated_at,
+          isActive: debate.is_active,
+          isFeatured: debate.is_featured,
+          viewCount: debate.view_count,
+          participantsCount: debate.participants_count,
+          authorId: debate.author_id,
+          qualityScore: calculateQualityScore(debate),
+          sourceQualityScore: calculateSourceQualityScore(debate),
+          currentPhase: calculateCurrentPhase(debate)
+        }))
+      } catch (error) {
+        console.error('Error in featuredDebates query:', error)
+        throw new Error('Failed to fetch featured debates')
+      }
     },
 
     trendingTopics: async () => {
-      const { rows } = await pool.query(`
-        SELECT 
-          t.id,
-          t.title,
-          t.description,
-          t.category,
-          t.trend,
-          t.created_at,
-          t.updated_at,
-          COUNT(dt.debate_id) as debate_count
-        FROM topics t
-        LEFT JOIN debate_topics dt ON t.id = dt.topic_id
-        GROUP BY t.id, t.title, t.description, t.category, t.trend, t.created_at, t.updated_at
-        ORDER BY debate_count DESC
-        LIMIT 10
-      `)
-      return rows.map(row => ({
-        ...row,
-        debateCount: parseInt(row.debate_count),
-        createdAt: row.created_at,
-        updatedAt: row.updated_at
-      }))
+      try {
+        const { rows } = await query(`
+          SELECT 
+            t.id,
+            t.title,
+            t.description,
+            t.category,
+            t.trend,
+            t.created_at,
+            t.updated_at,
+            COUNT(dt.debate_id) as debate_count
+          FROM topics t
+          LEFT JOIN debate_topics dt ON t.id = dt.topic_id
+          GROUP BY t.id, t.title, t.description, t.category, t.trend, t.created_at, t.updated_at
+          ORDER BY debate_count DESC
+          LIMIT 10
+        `)
+        return rows.map(row => ({
+          ...row,
+          debateCount: parseInt(row.debate_count),
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        }))
+      } catch (error) {
+        console.error('Error in trendingTopics query:', error)
+        throw new Error('Failed to fetch trending topics')
+      }
     },
 
     topic: async (_: unknown, { id }: { id: string }) => {
-      const { rows } = await pool.query(
-        'SELECT * FROM topics WHERE id = $1',
-        [id]
-      )
-      return rows[0]
+      try {
+        const { rows } = await query(
+          'SELECT * FROM topics WHERE id = $1',
+          [id]
+        )
+        return rows[0]
+      } catch (error) {
+        console.error('Error in topic query:', error)
+        throw new Error('Failed to fetch topic')
+      }
     }
   },
 
@@ -239,40 +255,55 @@ export const resolvers = {
       const session = await getServerSession(authOptions)
       if (!session?.user) throw new Error('Not authenticated')
 
-      const { rows } = await pool.query(
-        'INSERT INTO debates (title, description, category, tags, author_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [input.title, input.description, input.category, input.tags, session.user.id]
-      )
-      return rows[0]
+      try {
+        const { rows } = await query(
+          'INSERT INTO debates (title, description, category, tags, author_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+          [input.title, input.description, input.category, input.tags, session.user.id]
+        )
+        return rows[0]
+      } catch (error) {
+        console.error('Error in createDebate mutation:', error)
+        throw new Error('Failed to create debate')
+      }
     },
 
     createComment: async (_: unknown, { input }: { input: CreateCommentInput }, context: Context) => {
       const session = await getServerSession(authOptions)
       if (!session?.user) throw new Error('Not authenticated')
 
-      const { rows } = await pool.query(
-        'INSERT INTO comments (content, debate_id, author_id, is_pro_argument, sources) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [input.content, input.debateId, session.user.id, input.isProArgument, input.sources || []]
-      )
-      return rows[0]
+      try {
+        const { rows } = await query(
+          'INSERT INTO comments (content, debate_id, author_id, is_pro_argument, sources) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+          [input.content, input.debateId, session.user.id, input.isProArgument, input.sources || []]
+        )
+        return rows[0]
+      } catch (error) {
+        console.error('Error in createComment mutation:', error)
+        throw new Error('Failed to create comment')
+      }
     },
 
     createVote: async (_: unknown, { input }: { input: CreateVoteInput }, context: Context) => {
       const session = await getServerSession(authOptions)
       if (!session?.user) throw new Error('Not authenticated')
 
-      const { rows } = await pool.query(
-        'INSERT INTO votes (debate_id, user_id, is_pro_vote) VALUES ($1, $2, $3) RETURNING *',
-        [input.debateId, session.user.id, input.isProVote]
-      )
-      return rows[0]
+      try {
+        const { rows } = await query(
+          'INSERT INTO votes (debate_id, user_id, is_pro_vote) VALUES ($1, $2, $3) RETURNING *',
+          [input.debateId, session.user.id, input.isProVote]
+        )
+        return rows[0]
+      } catch (error) {
+        console.error('Error in createVote mutation:', error)
+        throw new Error('Failed to create vote')
+      }
     }
   },
 
   Topic: {
     debates: async (topic: any) => {
       try {
-        const { rows } = await pool.query(
+        const { rows } = await query(
           'SELECT d.* FROM debates d JOIN debate_topics dt ON d.id = dt.debate_id WHERE dt.topic_id = $1',
           [topic.id]
         )
@@ -296,7 +327,7 @@ export const resolvers = {
     },
 
     debateCount: async (topic: any) => {
-      const { rows } = await pool.query(
+      const { rows } = await query(
         'SELECT COUNT(*) as count FROM debate_topics WHERE topic_id = $1',
         [topic.id]
       )
@@ -304,7 +335,7 @@ export const resolvers = {
     },
 
     relatedTopics: async (topic: any) => {
-      const { rows } = await pool.query(`
+      const { rows } = await query(`
         SELECT DISTINCT t.*
         FROM topics t
         JOIN debate_topics dt1 ON t.id = dt1.topic_id
@@ -324,7 +355,7 @@ export const resolvers = {
     author: async (debate: any) => {
       try {
         if (!debate.author_id) return null
-        const { rows } = await pool.query(
+        const { rows } = await query(
           'SELECT * FROM users WHERE id = $1',
           [debate.author_id]
         )
@@ -343,7 +374,7 @@ export const resolvers = {
 
     comments: async (debate: any) => {
       try {
-        const { rows } = await pool.query(
+        const { rows } = await query(
           'SELECT * FROM comments WHERE debate_id = $1 ORDER BY created_at DESC',
           [debate.id]
         )
@@ -372,7 +403,7 @@ export const resolvers = {
     },
 
     timeline: async (debate: any) => {
-      const { rows } = await pool.query(
+      const { rows } = await query(
         'SELECT * FROM timeline_events WHERE debate_id = $1 ORDER BY timestamp ASC',
         [debate.id]
       )
@@ -387,7 +418,7 @@ export const resolvers = {
     },
 
     phases: async (debate: any) => {
-      const { rows } = await pool.query(
+      const { rows } = await query(
         'SELECT * FROM debate_phases WHERE debate_id = $1 ORDER BY start_time ASC',
         [debate.id]
       )
@@ -402,7 +433,7 @@ export const resolvers = {
     },
 
     topics: async (debate: any) => {
-      const { rows } = await pool.query(
+      const { rows } = await query(
         'SELECT t.* FROM topics t JOIN debate_topics dt ON t.id = dt.topic_id WHERE dt.debate_id = $1',
         [debate.id]
       )
@@ -411,7 +442,7 @@ export const resolvers = {
 
     voteStatistics: async (debate: any) => {
       try {
-        const { rows } = await pool.query(
+        const { rows } = await query(
           'SELECT COUNT(*) as total, SUM(CASE WHEN is_pro_vote THEN 1 ELSE 0 END) as pro FROM votes WHERE debate_id = $1',
           [debate.id]
         )
@@ -442,7 +473,7 @@ export const resolvers = {
     metadata: async (debate: any) => {
       try {
         // Get all comments for this debate
-        const { rows: comments } = await pool.query(
+        const { rows: comments } = await query(
           'SELECT * FROM comments WHERE debate_id = $1',
           [debate.id]
         )
@@ -493,7 +524,7 @@ export const resolvers = {
     author: async (comment: any) => {
       try {
         if (!comment.author_id) return null
-        const { rows } = await pool.query(
+        const { rows } = await query(
           'SELECT * FROM users WHERE id = $1',
           [comment.author_id]
         )
@@ -513,7 +544,7 @@ export const resolvers = {
     debate: async (comment: any) => {
       try {
         if (!comment.debate_id) return null
-        const { rows } = await pool.query(
+        const { rows } = await query(
           'SELECT * FROM debates WHERE id = $1',
           [comment.debate_id]
         )
@@ -539,7 +570,7 @@ export const resolvers = {
 
     media: async (comment: any) => {
       try {
-        const { rows } = await pool.query(
+        const { rows } = await query(
           'SELECT * FROM media WHERE comment_id = $1',
           [comment.id]
         )

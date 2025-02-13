@@ -1,11 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { createPool } from '@vercel/postgres'
+import { getPool } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
-
-const pool = createPool({
-  connectionString: process.env.POSTGRES_URL
-})
 
 interface GraphQLContext {
   session: any
@@ -24,7 +20,7 @@ export async function createContext({ req, res }: ContextParams): Promise<GraphQ
 
   return {
     session,
-    db: pool,
+    db: getPool(),
     req,
     res
   }
