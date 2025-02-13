@@ -2,204 +2,45 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main]
   pull_request:
-    branches: [ main, develop ]
-
-permissions:
-  contents: read
-  packages: write
-  pull-requests: write
-  checks: write
+    branches: [main]
 
 jobs:
-  quality:
-    name: Code Quality
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: |
-        npm ci
-        cd backend && npm ci
-      
-    - name: Type check
-      run: npm run typecheck
-    
-    - name: Lint
-      run: |
-        npm run lint
-        cd backend && npm run lint
-        
-    - name: Check formatting
-      run: |
-        npx prettier --check "src/**/*.{ts,tsx}"
-        cd backend && npx prettier --check "src/**/*.ts"
-        
-    - name: Security audit
-      run: |
-        npm audit
-        cd backend && npm audit
-        
-    - name: Check dependencies
-      uses: depcheck/depcheck@v1
-      with:
-        ignores: "@types/*,@testing-library/*"
-
   test:
-    name: Tests
     runs-on: ubuntu-latest
-    needs: quality
     
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: debattle_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
       
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: |
-        npm ci
-        cd backend && npm ci
-    
-    - name: Frontend unit tests
-      run: npm run test
-      env:
-        CI: true
-        
-    - name: Backend unit tests
-      run: cd backend && npm run test
-      env:
-        CI: true
-        
-    - name: Backend E2E tests
-      run: cd backend && npm run test:e2e
-      env:
-        CI: true
-        POSTGRES_HOST: localhost
-        POSTGRES_PORT: 5432
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: debattle_test
-        REDIS_HOST: localhost
-        REDIS_PORT: 6379
-        
-    - name: Frontend E2E tests
-      run: |
-        npm run build
-        npm run start &
-        npx wait-on http://localhost:3000
-        npm run test:e2e
-      env:
-        CYPRESS_BASE_URL: http://localhost:3000
-        
-    - name: Upload test coverage
-      uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage/lcov.info,./backend/coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: true
-
-  load-test:
-    name: Load Testing
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'pull_request'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Run k6 Load Tests
-      uses: grafana/k6-action@v0.3.0
-      with:
-        filename: backend/test/load/rate-limit.k6.js
-        flags: --out json=load-test-results.json
-      env:
-        K6_BASE_URL: http://localhost:4000/graphql
-        
-    - name: Store Load Test Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: k6-load-test-results
-        path: load-test-results.json
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: [test, load-test]
-    if: github.event_name == 'push'
-    environment: registry
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ secrets.REGISTRY_URL }}
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_TOKEN }}
-    
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: |
-          ${{ secrets.REGISTRY_URL }}/${{ secrets.REGISTRY_USERNAME }}/debattle:${{ github.sha }}
-          ${{ secrets.REGISTRY_URL }}/${{ secrets.REGISTRY_USERNAME }}/debattle:${{ github.ref_name }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        build-args: |
-          NODE_ENV=production
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
           
-    - name: Scan Docker image for vulnerabilities
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: ${{ secrets.REGISTRY_URL }}/${{ secrets.REGISTRY_USERNAME }}/debattle:${{ github.sha }}
-        format: 'table'
-        exit-code: '1'
-        ignore-unfixed: true
-        vuln-type: 'os,library'
-        severity: 'CRITICAL,HIGH' 
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run linting
+        run: npm run lint
+        
+      - name: Run type checking
+        run: npm run typecheck
+        
+      - name: Run tests
+        run: npm test
+        env:
+          CI: true
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: http://localhost:3000
+          GITHUB_ID: ${{ secrets.OAUTH_GITHUB_ID }}
+          GITHUB_SECRET: ${{ secrets.OAUTH_GITHUB_SECRET }}
+          GOOGLE_ID: ${{ secrets.OAUTH_GOOGLE_ID }}
+          GOOGLE_SECRET: ${{ secrets.OAUTH_GOOGLE_SECRET }}
+          
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }} 

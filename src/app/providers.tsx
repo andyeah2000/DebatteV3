@@ -4,16 +4,9 @@ import { ThemeProvider } from 'next-themes'
 import { SessionProvider } from 'next-auth/react'
 import { ApolloClient, InMemoryCache, ApolloProvider, from } from '@apollo/client'
 import { MotionConfig } from 'framer-motion'
-import { PortManager } from '@/config/ports'
 import { onError } from '@apollo/client/link/error'
 import { HttpLink } from '@apollo/client/link/http'
 import { RetryLink } from '@apollo/client/link/retry'
-import { useEffect } from 'react'
-
-// Initialize PortManager with fixed ports for development
-const portManager = PortManager.getInstance()
-portManager.setFrontendPort(3001) // Da der Frontend-Server auf 3001 läuft
-portManager.setBackendPort(4000)  // Backend läuft auf 4000
 
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
   if (graphQLErrors) {

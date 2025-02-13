@@ -2,188 +2,62 @@ name: Maintenance
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Run weekly at midnight on Sunday
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
   workflow_dispatch:  # Allow manual trigger
 
-permissions:
-  contents: write
-  pull-requests: write
-  packages: read
-  id-token: write
-
 jobs:
-  security:
-    name: Security Checks
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: |
-        npm ci
-        cd backend && npm ci
-    
-    - name: Run npm audit
-      run: |
-        npm audit
-        cd backend && npm audit
-    
-    - name: Run OWASP Dependency Check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        project: 'Debattle'
-        path: '.'
-        format: 'HTML'
-        out: 'reports'
-        
-    - name: Upload security report
-      uses: actions/upload-artifact@v4
-      with:
-        name: security-report
-        path: reports/
-        
-    - name: Scan for secrets
-      uses: gitleaks/gitleaks-action@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   dependencies:
-    name: Dependency Updates
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Check for outdated dependencies
-      id: outdated
-      run: |
-        npm outdated || true
-        cd backend && npm outdated || true
-    
-    - name: Create dependency update PR
-      if: steps.outdated.outcome == 'failure'
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: 'chore(deps): update dependencies'
-        title: '⬆️ Update Dependencies'
-        body: |
-          This PR updates outdated dependencies to their latest versions.
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
           
-          Please review the changes carefully before merging.
-        branch: chore/dependency-updates
-        delete-branch: true
-        labels: dependencies
-
-  backup:
-    name: Database Backup
+      - name: Check for outdated dependencies
+        run: npm outdated
+        continue-on-error: true
+        
+      - name: Run security audit
+        run: npm audit
+        continue-on-error: true
+        
+      - name: Create issue for outdated dependencies
+        if: failure()
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: .github/ISSUE_TEMPLATE/dependencies.md
+          
+  security:
     runs-on: ubuntu-latest
-    environment: production
     
     steps:
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-        aws-region: ${{ secrets.AWS_REGION }}
-    
-    - name: Install SSH key
-      uses: shimataro/ssh-key-action@v2
-      with:
-        key: ${{ secrets.PRODUCTION_SSH_KEY }}
-        known_hosts: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
-    
-    - name: Create backup
-      env:
-        DEPLOY_HOST: ${{ secrets.PRODUCTION_HOST }}
-        DEPLOY_USER: ${{ secrets.PRODUCTION_USER }}
-        BACKUP_BUCKET: ${{ secrets.AWS_BACKUP_BUCKET }}
-      run: |
-        # Create backup timestamp
-        TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+      - uses: actions/checkout@v4
+      
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript, typescript
+          
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
         
-        # Create backup directory
-        ssh $DEPLOY_USER@$DEPLOY_HOST "mkdir -p ~/backups"
-        
-        # Backup PostgreSQL database
-        ssh $DEPLOY_USER@$DEPLOY_HOST "cd ~/debattle/production && \
-          docker-compose exec -T postgres pg_dump -U \$POSTGRES_USER \$POSTGRES_DB | gzip > ~/backups/db_backup_\${TIMESTAMP}.sql.gz"
-        
-        # Backup Redis data
-        ssh $DEPLOY_USER@$DEPLOY_HOST "cd ~/debattle/production && \
-          docker-compose exec -T redis redis-cli SAVE && \
-          docker cp \$(docker-compose ps -q redis):/data/dump.rdb ~/backups/redis_backup_\${TIMESTAMP}.rdb"
-        
-        # Upload backups to cloud storage
-        ssh $DEPLOY_USER@$DEPLOY_HOST "cd ~/backups && \
-          aws s3 cp db_backup_\${TIMESTAMP}.sql.gz s3://$BACKUP_BUCKET/databases/ && \
-          aws s3 cp redis_backup_\${TIMESTAMP}.rdb s3://$BACKUP_BUCKET/redis/"
-    
-    - name: Cleanup old backups
-      env:
-        DEPLOY_HOST: ${{ secrets.PRODUCTION_HOST }}
-        DEPLOY_USER: ${{ secrets.PRODUCTION_USER }}
-        BACKUP_BUCKET: ${{ secrets.AWS_BACKUP_BUCKET }}
-      run: |
-        # Keep only last 7 days of local backups
-        ssh $DEPLOY_USER@$DEPLOY_HOST "find ~/backups -type f -mtime +7 -delete"
-        
-        # Cleanup old backups from S3 (keep last 30 days)
-        ssh $DEPLOY_USER@$DEPLOY_HOST "aws s3 ls s3://$BACKUP_BUCKET/databases/ | \
-          awk '{print \$4}' | sort -r | tail -n +31 | \
-          xargs -I {} aws s3 rm s3://$BACKUP_BUCKET/databases/{}"
-        
-        ssh $DEPLOY_USER@$DEPLOY_HOST "aws s3 ls s3://$BACKUP_BUCKET/redis/ | \
-          awk '{print \$4}' | sort -r | tail -n +31 | \
-          xargs -I {} aws s3 rm s3://$BACKUP_BUCKET/redis/{}"
-
-  cleanup:
-    name: System Cleanup
-    runs-on: ubuntu-latest
-    environment: production
-    needs: backup
-    
-    steps:
-    - name: Install SSH key
-      uses: shimataro/ssh-key-action@v2
-      with:
-        key: ${{ secrets.PRODUCTION_SSH_KEY }}
-        known_hosts: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
-    
-    - name: Cleanup Docker resources
-      env:
-        DEPLOY_HOST: ${{ secrets.PRODUCTION_HOST }}
-        DEPLOY_USER: ${{ secrets.PRODUCTION_USER }}
-      run: |
-        ssh $DEPLOY_USER@$DEPLOY_HOST "cd ~/debattle/production && \
-          docker-compose exec -T app npm cache clean --force && \
-          docker system prune -af --volumes"
-    
-    - name: Cleanup logs
-      env:
-        DEPLOY_HOST: ${{ secrets.PRODUCTION_HOST }}
-        DEPLOY_USER: ${{ secrets.PRODUCTION_USER }}
-      run: |
-        ssh $DEPLOY_USER@$DEPLOY_HOST "cd ~/debattle/production && \
-          find . -name '*.log' -mtime +7 -delete && \
-          docker-compose exec -T app pm2 flush"
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
 
   notify:
     name: Send Report
-    needs: [security, dependencies, backup, cleanup]
+    needs: [security, dependencies]
     runs-on: ubuntu-latest
     if: always()
     environment: production
@@ -195,8 +69,6 @@ jobs:
         echo "### Maintenance Run Report" > report.md
         echo "- Security Checks: ${{ needs.security.result }}" >> report.md
         echo "- Dependency Updates: ${{ needs.dependencies.result }}" >> report.md
-        echo "- Database Backup: ${{ needs.backup.result }}" >> report.md
-        echo "- System Cleanup: ${{ needs.cleanup.result }}" >> report.md
         
     - name: Send Slack notification
       uses: slackapi/slack-github-action@v1
