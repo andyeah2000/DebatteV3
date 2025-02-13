@@ -3,10 +3,9 @@ import { Providers } from './providers'
 import { Header } from '@/components/layout/header'
 import './globals.css'
 import dynamic from 'next/dynamic'
-import { Analytics } from '@vercel/analytics/react'
 import { Metadata } from 'next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import { analyticsConfig } from '@/lib/analytics-config'
+import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -125,7 +124,7 @@ export default function RootLayout({
           <Header />
           <ServiceWorkerRegistrator />
           {children}
-          <Analytics {...analyticsConfig} />
+          <AnalyticsProvider />
           <SpeedInsights />
         </Providers>
       </body>
