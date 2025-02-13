@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import type { Route } from 'next'
+import { cn } from '@/lib/utils'
 
 const navigation = [
   { name: 'Home', href: '/' as Route },
@@ -15,64 +16,133 @@ const navigation = [
   { name: 'About', href: '/about' as Route },
 ]
 
+const menuVariants = {
+  closed: {
+    opacity: 0,
+    height: 0,
+    transition: {
+      duration: 0.2,
+      ease: 'easeInOut'
+    }
+  },
+  open: {
+    opacity: 1,
+    height: 'auto',
+    transition: {
+      duration: 0.2,
+      ease: 'easeInOut'
+    }
+  }
+}
+
 export function Header() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-secondary-200 bg-white/80 backdrop-blur-sm">
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Global">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <div className="flex flex-shrink-0 items-center">
-            <Link href={'/' as Route} className="text-xl font-bold text-secondary-900">
+          <div className="flex lg:flex-1">
+            <Link
+              href={'/' as Route}
+              className="-m-1.5 p-1.5 text-2xl font-bold tracking-tight hover:text-primary transition-colors"
+            >
               Debattle
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:space-x-6">
+          {/* Mobile menu button */}
+          <div className="flex lg:hidden">
+            <button
+              type="button"
+              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <span className="sr-only">
+                {isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              </span>
+              {isMobileMenuOpen ? (
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+
+          {/* Desktop navigation */}
+          <div className="hidden lg:flex lg:gap-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`text-sm font-medium ${
+                className={cn(
+                  'text-sm font-medium transition-colors hover:text-foreground/80',
                   pathname === item.href
-                    ? 'text-primary-600'
-                    : 'text-secondary-600 hover:text-secondary-900'
-                }`}
+                    ? 'text-foreground'
+                    : 'text-foreground/60'
+                )}
               >
                 {item.name}
               </Link>
             ))}
           </div>
 
-          {/* Desktop Right Section */}
-          <div className="hidden items-center justify-end md:flex md:flex-1 lg:w-0">
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-6">
             {session ? (
               <div className="flex items-center space-x-4">
                 <Link
                   href={'/debates/new' as Route}
-                  className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                  className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
                 >
                   Start Debate
                 </Link>
-                <Link href={'/settings' as Route} className="text-sm font-medium text-secondary-600 hover:text-secondary-900">
+                <Link
+                  href={'/settings' as Route}
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Settings
                 </Link>
                 <Link href={`/users/${session.user.id}` as Route}>
-                  <Image
-                    className="rounded-full"
-                    src={session.user.image || `https://ui-avatars.com/api/?name=${session.user.name}`}
-                    alt={session.user.name}
-                    width={32}
-                    height={32}
-                    priority
-                  />
+                  <div className="relative h-8 w-8 overflow-hidden rounded-full ring-2 ring-background">
+                    <Image
+                      className="object-cover"
+                      src={session.user.image || `https://ui-avatars.com/api/?name=${session.user.name}`}
+                      alt={session.user.name}
+                      fill
+                      sizes="32px"
+                      priority
+                    />
+                  </div>
                 </Link>
                 <Button
                   variant="ghost"
+                  size="sm"
                   onClick={() => signOut()}
                 >
                   Sign out
@@ -81,93 +151,99 @@ export function Header() {
             ) : (
               <div className="flex items-center space-x-4">
                 <Link href={'/login' as Route}>
-                  <Button variant="ghost">Sign in</Button>
+                  <Button variant="ghost" size="sm">Sign in</Button>
                 </Link>
                 <Link href={'/register' as Route}>
-                  <Button>Sign up</Button>
+                  <Button size="sm">Sign up</Button>
                 </Link>
               </div>
             )}
           </div>
-
-          {/* Mobile menu button */}
-          <div className="flex items-center md:hidden">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-md p-2 text-secondary-400 hover:bg-secondary-100 hover:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <span className="sr-only">Open main menu</span>
-              {isMobileMenuOpen ? (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
         </div>
 
         {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`block rounded-md px-3 py-2 text-base font-medium ${
-                    pathname === item.href
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              {session ? (
-                <>
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              className="lg:hidden"
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={menuVariants}
+            >
+              <div className="space-y-1 pb-3 pt-2">
+                {navigation.map((item) => (
                   <Link
-                    href={'/debates/new' as Route}
-                    className="block rounded-md px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 hover:text-primary-700"
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      'block rounded-lg px-3 py-2 text-base font-medium transition-colors',
+                      pathname === item.href
+                        ? 'bg-secondary text-foreground'
+                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    )}
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Start Debate
+                    {item.name}
                   </Link>
-                  <Link
-                    href={'/settings' as Route}
-                    className="block rounded-md px-3 py-2 text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900"
-                  >
-                    Settings
-                  </Link>
-                  <button
-                    onClick={() => signOut()}
-                    className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900"
-                  >
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href={'/login' as Route}
-                    className="block rounded-md px-3 py-2 text-base font-medium text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900"
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    href={'/register' as Route}
-                    className="block rounded-md px-3 py-2 text-base font-medium text-primary-600 hover:bg-primary-50 hover:text-primary-700"
-                  >
-                    Sign up
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+                ))}
+              </div>
+              <div className="border-t pb-3 pt-4">
+                {session ? (
+                  <div className="space-y-1 px-2">
+                    <Link
+                      href={'/debates/new' as Route}
+                      className="block rounded-lg px-3 py-2 text-base font-medium text-primary hover:bg-secondary hover:text-primary/90 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Start Debate
+                    </Link>
+                    <Link
+                      href={'/settings' as Route}
+                      className="block rounded-lg px-3 py-2 text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Settings
+                    </Link>
+                    <Link
+                      href={`/users/${session.user.id}` as Route}
+                      className="block rounded-lg px-3 py-2 text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      className="block w-full rounded-lg px-3 py-2 text-left text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false)
+                        signOut()
+                      }}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-1 px-2">
+                    <Link
+                      href={'/login' as Route}
+                      className="block rounded-lg px-3 py-2 text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href={'/register' as Route}
+                      className="block rounded-lg px-3 py-2 text-base font-medium text-foreground hover:bg-secondary transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
     </header>
   )

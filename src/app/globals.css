@@ -4,81 +4,98 @@
 
 @layer base {
   :root {
-    /* Color System */
+    /* Enhanced Color System - More sophisticated and harmonious palette */
     --background: 255 255 255;
-    --foreground: 51 51 51;
+    --foreground: 15 23 42;
     
     --card: 255 255 255;
-    --card-foreground: 51 51 51;
+    --card-foreground: 15 23 42;
     
     --popover: 255 255 255;
-    --popover-foreground: 51 51 51;
+    --popover-foreground: 15 23 42;
     
-    --primary: 0 112 243;
+    /* Refined Primary Blue - More professional and trustworthy */
+    --primary: 59 130 246;
     --primary-foreground: 255 255 255;
     
-    --secondary: 245 245 245;
-    --secondary-foreground: 51 51 51;
+    /* Sophisticated Secondary - Softer and more elegant */
+    --secondary: 241 245 249;
+    --secondary-foreground: 51 65 85;
     
-    --muted: 245 245 245;
-    --muted-foreground: 115 115 115;
+    /* Muted Tones - Better for supporting content */
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
     
-    --accent: 255 107 0;
+    /* Warmer Accent - More engaging and inviting */
+    --accent: 245 158 11;
     --accent-foreground: 255 255 255;
     
+    /* Refined Destructive - Less harsh red */
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
     
-    --border: 229 231 235;
-    --input: 229 231 235;
-    --ring: 0 112 243;
+    /* Subtle Borders and Inputs */
+    --border: 226 232 240;
+    --input: 226 232 240;
+    --ring: 59 130 246;
     
-    /* Spacing System */
-    --space-base: 1rem;            /* 16px */
-    --space-xs: calc(var(--space-base) * 0.25);  /* 4px */
-    --space-sm: calc(var(--space-base) * 0.5);   /* 8px */
-    --space-md: var(--space-base);               /* 16px */
-    --space-lg: calc(var(--space-base) * 1.5);   /* 24px */
-    --space-xl: calc(var(--space-base) * 2);     /* 32px */
-    --space-2xl: calc(var(--space-base) * 3);    /* 48px */
+    /* Enhanced Spacing System - More precise and harmonious */
+    --space-3xs: 0.125rem;  /* 2px */
+    --space-2xs: 0.25rem;   /* 4px */
+    --space-xs: 0.5rem;     /* 8px */
+    --space-sm: 0.75rem;    /* 12px */
+    --space-md: 1rem;       /* 16px */
+    --space-lg: 1.5rem;     /* 24px */
+    --space-xl: 2rem;       /* 32px */
+    --space-2xl: 3rem;      /* 48px */
+    --space-3xl: 4rem;      /* 64px */
     
-    /* Border Radius */
-    --radius-sm: 0.25rem;          /* 4px */
-    --radius-md: 0.5rem;           /* 8px */
-    --radius-lg: 0.75rem;          /* 12px */
+    /* Refined Border Radius - More consistent and modern */
+    --radius-xs: 0.25rem;   /* 4px */
+    --radius-sm: 0.375rem;  /* 6px */
+    --radius-md: 0.5rem;    /* 8px */
+    --radius-lg: 0.75rem;   /* 12px */
+    --radius-xl: 1rem;      /* 16px */
     --radius-full: 9999px;
     
-    /* Typography */
+    /* Typography System - Enhanced readability */
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
     --font-mono: 'Roboto Mono', monospace;
     
-    /* Font Sizes */
-    --text-xs: 0.75rem;    /* 12px */
-    --text-sm: 0.875rem;   /* 14px */
-    --text-base: 1rem;     /* 16px */
-    --text-lg: 1.125rem;   /* 18px */
-    --text-xl: 1.25rem;    /* 20px */
-    --text-2xl: 1.5rem;    /* 24px */
-    --text-3xl: 1.875rem;  /* 30px */
-    --text-4xl: 2.25rem;   /* 36px */
+    /* Refined Type Scale - More harmonious progression */
+    --text-xs: 0.75rem;      /* 12px */
+    --text-sm: 0.875rem;     /* 14px */
+    --text-base: 1rem;       /* 16px */
+    --text-lg: 1.125rem;     /* 18px */
+    --text-xl: 1.25rem;      /* 20px */
+    --text-2xl: 1.5rem;      /* 24px */
+    --text-3xl: 1.875rem;    /* 30px */
+    --text-4xl: 2.25rem;     /* 36px */
+    --text-5xl: 3rem;        /* 48px */
+    --text-6xl: 3.75rem;     /* 60px */
     
-    /* Line Heights */
+    /* Enhanced Line Heights - Better readability */
     --leading-none: 1;
     --leading-tight: 1.25;
+    --leading-snug: 1.375;
     --leading-normal: 1.5;
-    --leading-relaxed: 1.75;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
     
-    /* Transitions */
+    /* Refined Transitions - Smoother animations */
     --transition-fast: 150ms;
     --transition-normal: 250ms;
     --transition-slow: 350ms;
+    --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
     
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    /* Enhanced Shadows - More subtle and realistic */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
     
-    /* Z-Index Layers */
+    /* Z-Index System - Better organization */
     --z-negative: -1;
     --z-elevate: 1;
     --z-sticky: 100;
@@ -86,15 +103,17 @@
     --z-modal: 300;
     --z-popover: 400;
     --z-toast: 500;
+    --z-tooltip: 600;
   }
 }
 
 @layer base {
-  /* Base Styles */
+  /* Enhanced Base Styles */
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   
   body {
@@ -102,33 +121,61 @@
     font-family: var(--font-sans);
     font-size: var(--text-base);
     line-height: var(--leading-normal);
+    letter-spacing: -0.011em;
   }
 
-  /* Typography */
+  /* Refined Typography */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
     margin-bottom: var(--space-md);
+    letter-spacing: -0.02em;
   }
 
-  h1 { font-size: var(--text-4xl); }
-  h2 { font-size: var(--text-3xl); }
-  h3 { font-size: var(--text-2xl); }
-  h4 { font-size: var(--text-xl); }
-  h5 { font-size: var(--text-lg); }
-  h6 { font-size: var(--text-base); }
+  h1 { 
+    font-size: var(--text-5xl);
+    line-height: 1.1;
+  }
+  h2 { 
+    font-size: var(--text-4xl);
+    line-height: 1.2;
+  }
+  h3 { 
+    font-size: var(--text-3xl);
+    line-height: 1.3;
+  }
+  h4 { 
+    font-size: var(--text-2xl);
+    line-height: 1.4;
+  }
+  h5 { 
+    font-size: var(--text-xl);
+    line-height: 1.4;
+  }
+  h6 { 
+    font-size: var(--text-lg);
+    line-height: 1.5;
+  }
 
-  /* Links */
+  /* Enhanced Links */
   a {
     @apply text-primary hover:text-primary/90 transition-colors;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
   }
 
-  /* Focus Styles */
+  /* Improved Focus Styles */
   :focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Selection Styles */
+  ::selection {
+    @apply bg-primary/20 text-foreground;
   }
 }
 
-/* Custom Scrollbar */
+/* Refined Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -136,23 +183,25 @@
 
 ::-webkit-scrollbar-track {
   @apply bg-secondary/30;
+  border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-secondary bg-opacity-50 rounded-full hover:bg-opacity-70 transition-colors;
+  @apply bg-secondary hover:bg-secondary/80 transition-colors;
+  border-radius: var(--radius-full);
 }
 
 /* Mobile Optimizations */
 @media (max-width: 640px) {
   :root {
-    --text-base: 1.125rem; /* 18px auf Mobile */
+    --text-base: 1rem;
   }
 
   body {
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Größere Touch-Targets auf Mobile */
+  /* Optimized Touch Targets */
   button, 
   [role="button"],
   input[type="submit"],
@@ -160,6 +209,7 @@
   input[type="button"] {
     min-height: 44px;
     min-width: 44px;
+    padding: 0.5rem 1rem;
   }
 }
 
@@ -168,4 +218,25 @@
   body {
     @apply text-black bg-white;
   }
+}
+
+/* Enhanced Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Loading Skeleton */
+.skeleton {
+  @apply bg-secondary/50 animate-pulse rounded;
+}
+
+/* Glass Effect */
+.glass {
+  @apply bg-white/80 backdrop-blur-lg border border-white/20;
 } 
