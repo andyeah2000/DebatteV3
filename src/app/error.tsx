@@ -83,9 +83,9 @@ export default function Error({
             <Button onClick={() => reset()} size="lg">
               Try again
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/">Go back home</Link>
-            </Button>
+            <Link href="/">
+              <Button asChild variant="outline" size="lg">Go back home</Button>
+            </Link>
           </motion.div>
         </motion.div>
 

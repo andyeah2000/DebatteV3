@@ -47,12 +47,12 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <Button asChild size="lg">
-              <Link href="/debates/new">Start a Debate</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/about">Learn More</Link>
-            </Button>
+            <Link href="/debates/new">
+              <Button asChild size="lg">Start a Debate</Button>
+            </Link>
+            <Link href="/about">
+              <Button asChild variant="outline" size="lg">Learn More</Button>
+            </Link>
           </motion.div>
         </div>
       </div>
