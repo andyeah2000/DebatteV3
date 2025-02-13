@@ -42,6 +42,15 @@ interface CreateVoteInput {
   isProVote: boolean
 }
 
+interface DebatesInput {
+  search?: string
+  category?: string
+  sortBy?: string
+  page?: number
+  limit?: number
+  tags?: string[]
+}
+
 // Custom DateTime scalar
 const dateTimeScalar = new GraphQLScalarType({
   name: 'DateTime',
@@ -111,25 +120,45 @@ export const resolvers = {
       }
     },
 
-    debates: async (_: unknown, { skip = 0, take = 10, orderBy = 'created_at', searchTerm, tags }: QueryArgs) => {
+    debates: async (_: unknown, { input }: { input: DebatesInput }) => {
       try {
+        const { search, category, sortBy = 'created_at', page = 1, limit = 10, tags } = input || {}
+        const offset = (page - 1) * limit
+        
         let query = 'SELECT * FROM debates'
         const params = []
+        const conditions = []
         
-        if (searchTerm) {
-          query += ' WHERE title ILIKE $1 OR description ILIKE $1'
-          params.push(`%${searchTerm}%`)
+        if (search) {
+          conditions.push('(title ILIKE $' + (params.length + 1) + ' OR description ILIKE $' + (params.length + 1) + ')')
+          params.push(`%${search}%`)
+        }
+
+        if (category) {
+          conditions.push('category = $' + (params.length + 1))
+          params.push(category)
         }
         
         if (tags && tags.length > 0) {
-          const tagCondition = tags.map((_: string, i: number) => `$${params.length + i + 1} = ANY(tags)`).join(' OR ')
-          query += params.length ? ' AND' : ' WHERE'
-          query += ` (${tagCondition})`
+          const tagConditions = tags.map((_, i) => `$${params.length + i + 1} = ANY(tags)`)
+          conditions.push(`(${tagConditions.join(' OR ')})`)
           params.push(...tags)
         }
+
+        if (conditions.length > 0) {
+          query += ' WHERE ' + conditions.join(' AND ')
+        }
         
-        query += ` ORDER BY ${orderBy} DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
-        params.push(take, skip)
+        // Map sortBy values to database columns
+        const sortMapping: { [key: string]: string } = {
+          recent: 'created_at',
+          popular: 'view_count',
+          active: 'participants_count'
+        }
+        const orderByColumn = sortMapping[sortBy] || 'created_at'
+        
+        query += ` ORDER BY ${orderByColumn} DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
+        params.push(limit, offset)
         
         const { rows } = await pool.query(query, params)
         return rows.map(debate => ({

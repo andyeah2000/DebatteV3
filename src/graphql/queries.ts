@@ -106,10 +106,15 @@ export const GET_DEBATES = gql`
         username
         avatarUrl
       }
+      participantsCount
+      viewCount
+      tags
       voteStatistics {
         totalVotes
         proVotes
         conVotes
+        proPercentage
+        conPercentage
       }
     }
   }

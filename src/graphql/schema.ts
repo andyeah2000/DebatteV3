@@ -120,16 +120,19 @@ export const typeDefs = gql`
     REJECTED
   }
 
+  input DebatesInput {
+    search: String
+    category: String
+    sortBy: String
+    page: Int
+    limit: Int
+    tags: [String!]
+  }
+
   type Query {
     me: User
     debate(id: ID!): Debate
-    debates(
-      skip: Int
-      take: Int
-      orderBy: String
-      searchTerm: String
-      tags: [String!]
-    ): [Debate!]!
+    debates(input: DebatesInput): [Debate!]!
     featuredDebates: [Debate!]!
     trendingTopics: [Topic!]!
     topic(id: ID!): Topic

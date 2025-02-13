@@ -6,6 +6,8 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/utils'
+import { useQuery } from '@apollo/client'
+import { GET_DEBATES } from '@/graphql/queries'
 
 interface Debate {
   id: string
@@ -54,69 +56,32 @@ export default function DebatesPage() {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
 
-  useEffect(() => {
-    fetchDebates()
-  }, [searchTerm, selectedCategory, sortBy, page])
-
-  async function fetchDebates() {
-    try {
-      const response = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `
-            query GetDebates($input: DebatesInput!) {
-              debates(input: $input) {
-                id
-                title
-                description
-                category
-                author {
-                  id
-                  username
-                  avatarUrl
-                }
-                createdAt
-                participantsCount
-                proVotes
-                conVotes
-                tags
-                viewCount
-              }
-            }
-          `,
-          variables: {
-            input: {
-              search: searchTerm,
-              category: selectedCategory,
-              sortBy,
-              page,
-              limit: 10,
-            },
-          },
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.errors) {
-        throw new Error(data.errors[0].message)
+  const { loading, error: queryError, data } = useQuery(GET_DEBATES, {
+    variables: {
+      input: {
+        search: searchTerm,
+        category: selectedCategory,
+        sortBy,
+        page,
+        limit: 10
       }
-
-      if (page === 1) {
-        setDebates(data.data.debates)
-      } else {
-        setDebates(prev => [...prev, ...data.data.debates])
-      }
-      setHasMore(data.data.debates.length === 10)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch debates')
-    } finally {
-      setIsLoading(false)
+    },
+    onError: (error) => {
+      console.error('Error fetching debates:', error);
+      setError(error.message);
     }
-  }
+  });
+
+  useEffect(() => {
+    if (data?.debates) {
+      if (page === 1) {
+        setDebates(data.debates);
+      } else {
+        setDebates(prev => [...prev, ...data.debates]);
+      }
+      setHasMore(data.debates.length === 10);
+    }
+  }, [data]);
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
