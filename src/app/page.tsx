@@ -34,10 +34,10 @@ export default function HomePage() {
         </p>
         <div className="flex gap-4 justify-center">
           <Link href="/debates/new">
-            <Button asChild>Start a Debate</Button>
+            <Button>Start a Debate</Button>
           </Link>
           <Link href="/debates">
-            <Button asChild variant="outline">Browse Debates</Button>
+            <Button variant="outline">Browse Debates</Button>
           </Link>
         </div>
       </section>
