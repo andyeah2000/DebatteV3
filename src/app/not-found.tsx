@@ -3,8 +3,16 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import type { Route } from 'next'
 
 export default function NotFound() {
+  const links = [
+    { name: 'Featured Debates', href: '/#featured' as Route },
+    { name: 'Start a Debate', href: '/debates/new' as Route },
+    { name: 'About Us', href: '/about' as Route },
+    { name: 'Help Center', href: '/help' as Route },
+  ]
+
   return (
     <div className="min-h-[80vh] bg-white dark:bg-secondary-900">
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
@@ -64,12 +72,7 @@ export default function NotFound() {
             Popular Destinations
           </h2>
           <ul className="mt-4 flex flex-wrap justify-center gap-4">
-            {[
-              { name: 'Featured Debates', href: '/#featured' },
-              { name: 'Start a Debate', href: '/debates/new' },
-              { name: 'About Us', href: '/about' },
-              { name: 'Help Center', href: '/help' },
-            ].map((link) => (
+            {links.map((link) => (
               <li key={link.name}>
                 <Link
                   href={link.href}

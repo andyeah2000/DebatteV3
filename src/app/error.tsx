@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import type { Route } from 'next'
 
 export default function Error({
   error,
@@ -108,7 +109,7 @@ export default function Error({
             </a>{' '}
             or visit our{' '}
             <Link
-              href="/help"
+              href={'/help' as Route}
               className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Help Center
