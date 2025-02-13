@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "preinstall": "npm config set legacy-peer-deps true",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -51,15 +50,15 @@
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "autoprefixer": "^10.4.17",
-    "crypto-browserify": "^3.12.1",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
     "eslint-plugin-react": "^7.33.2",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
-    "stream-browserify": "^3.0.0",
-    "typescript": "^5.3.3",
-    "util": "^0.12.5"
+    "typescript": "^5.3.3"
+  },
+  "overrides": {
+    "punycode": "^3.0.1"
   },
   "description": "A fact-based platform for meaningful political debates and discussions. Built with Next.js, TypeScript, and modern web technologies.",
   "main": "tailwind.config.js",
