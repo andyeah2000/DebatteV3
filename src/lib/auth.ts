@@ -3,6 +3,8 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import GithubProvider from 'next-auth/providers/github'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:4000/graphql'
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -25,7 +27,7 @@ export const authOptions: NextAuthOptions = {
         }
         
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/graphql`, {
+          const res = await fetch(API_URL, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',

@@ -187,7 +187,7 @@ export default function DebateDetailPage() {
 
   async function fetchDebate() {
     try {
-      const response = await fetch('http://localhost:4000/graphql', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -291,7 +291,7 @@ export default function DebateDetailPage() {
     if (!id || !isValidUUID(id as string)) return
 
     try {
-      const response = await fetch('/api/graphql', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -329,7 +329,7 @@ export default function DebateDetailPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:4000/graphql', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

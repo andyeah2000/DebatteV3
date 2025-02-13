@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { PortManager } from '@/config/ports'
 
+// Get the backend URL from environment variables
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:4000/graphql'
+
 // Get the backend port from the PortManager
 const portManager = PortManager.getInstance()
-const BACKEND_URL = `http://127.0.0.1:${portManager.getBackendPort()}/graphql`
+const BACKEND_URL_WITH_PORT = `http://127.0.0.1:${portManager.getBackendPort()}/graphql`
 
 async function retryWithBackoff(
   fn: () => Promise<Response>,
