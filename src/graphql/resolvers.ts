@@ -439,18 +439,51 @@ export const resolvers = {
     },
 
     metadata: async (debate: any) => {
-      // Implement AI analysis and metadata computation
-      return {
-        aiAnalysis: {
-          argumentQuality: 85,
-          biasLevel: 20,
-          factualAccuracy: 90,
-          moderationConfidence: 95
-        },
-        argumentStrengths: ['Well-researched', 'Balanced perspective'],
-        argumentWeaknesses: ['Could use more sources'],
-        biasTypes: [],
-        suggestions: ['Consider adding more expert opinions']
+      try {
+        // Get all comments for this debate
+        const { rows: comments } = await pool.query(
+          'SELECT * FROM comments WHERE debate_id = $1',
+          [debate.id]
+        )
+
+        // Calculate argument quality based on comment quality and sources
+        const argumentQuality = calculateArgumentQuality(comments)
+        
+        // Calculate bias level based on comment content
+        const biasLevel = calculateBiasLevel(comments)
+        
+        // Calculate factual accuracy based on verified sources
+        const factualAccuracy = calculateFactualAccuracy(comments)
+        
+        // Calculate moderation confidence based on verified status
+        const moderationConfidence = calculateModerationConfidence(comments)
+
+        return {
+          aiAnalysis: {
+            argumentQuality,
+            biasLevel,
+            factualAccuracy,
+            moderationConfidence
+          },
+          argumentStrengths: getArgumentStrengths(comments),
+          argumentWeaknesses: getArgumentWeaknesses(comments),
+          biasTypes: [],
+          suggestions: getSuggestions(comments)
+        }
+      } catch (error) {
+        console.error('Error in debate.metadata resolver:', error)
+        return {
+          aiAnalysis: {
+            argumentQuality: 0,
+            biasLevel: 0,
+            factualAccuracy: 0,
+            moderationConfidence: 0
+          },
+          argumentStrengths: [],
+          argumentWeaknesses: [],
+          biasTypes: [],
+          suggestions: []
+        }
       }
     }
   },
@@ -561,4 +594,142 @@ function calculateSourceQualityScore(debate: any): number {
 function calculateCurrentPhase(debate: any): string {
   // Implement current phase calculation logic
   return 'DISCUSSION'
+}
+
+// Helper functions for AI analysis
+function calculateArgumentQuality(comments: any[]): number {
+  if (!comments.length) return 0
+  
+  const scores = comments.map(comment => {
+    let score = 0
+    // Base score from 0-50 based on length and structure
+    score += Math.min(50, comment.content.length / 20)
+    
+    // Up to 25 points for having sources
+    if (comment.sources?.length) {
+      score += Math.min(25, comment.sources.length * 5)
+    }
+    
+    // Up to 25 points for upvotes vs downvotes
+    const voteRatio = (comment.upvotes || 0) / Math.max(1, (comment.downvotes || 0))
+    score += Math.min(25, voteRatio * 5)
+    
+    return Math.min(100, score)
+  })
+  
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+}
+
+function calculateBiasLevel(comments: any[]): number {
+  if (!comments.length) return 0
+  
+  const biasScores = comments.map(comment => {
+    let score = 0
+    const content = comment.content.toLowerCase()
+    
+    // Check for emotional language
+    const emotionalWords = ['must', 'never', 'always', 'definitely', 'absolutely']
+    score += emotionalWords.filter(word => content.includes(word)).length * 10
+    
+    // Check for balanced arguments
+    if (!comment.sources?.length) score += 20
+    if (!content.includes('however') && !content.includes('although')) score += 10
+    
+    return Math.min(100, score)
+  })
+  
+  return Math.round(biasScores.reduce((a, b) => a + b, 0) / biasScores.length)
+}
+
+function calculateFactualAccuracy(comments: any[]): number {
+  if (!comments.length) return 0
+  
+  const scores = comments.map(comment => {
+    let score = 50 // Start at 50%
+    
+    // Add points for verified sources
+    if (comment.sources?.length) {
+      const verifiedSources = comment.sources.filter((s: any) => s.verificationStatus === 'VERIFIED')
+      score += Math.min(50, verifiedSources.length * 10)
+    }
+    
+    // Subtract points for unverified claims
+    if (!comment.sources?.length && comment.content.length > 100) {
+      score -= 20
+    }
+    
+    return Math.max(0, Math.min(100, score))
+  })
+  
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+}
+
+function calculateModerationConfidence(comments: any[]): number {
+  if (!comments.length) return 100
+  
+  const scores = comments.map(comment => {
+    let score = 100
+    
+    // Reduce confidence for unverified comments
+    if (!comment.isVerified) score -= 20
+    
+    // Reduce confidence for reported content
+    if (comment.reports?.length) score -= comment.reports.length * 10
+    
+    // Reduce confidence for extreme vote ratios
+    const voteRatio = (comment.upvotes || 0) / Math.max(1, (comment.downvotes || 0))
+    if (voteRatio > 10 || voteRatio < 0.1) score -= 20
+    
+    return Math.max(0, score)
+  })
+  
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+}
+
+function getArgumentStrengths(comments: any[]): string[] {
+  const strengths = new Set<string>()
+  
+  comments.forEach(comment => {
+    if (comment.sources?.length) strengths.add('Well-sourced arguments')
+    if (comment.content.length > 500) strengths.add('Detailed explanations')
+    if (comment.upvotes > 10) strengths.add('Community-validated points')
+    if (comment.isVerified) strengths.add('Verified contributions')
+  })
+  
+  return Array.from(strengths)
+}
+
+function getArgumentWeaknesses(comments: any[]): string[] {
+  const weaknesses = new Set<string>()
+  
+  comments.forEach(comment => {
+    if (!comment.sources?.length) weaknesses.add('Some claims lack sources')
+    if (comment.content.length < 100) weaknesses.add('Some arguments need more detail')
+    if (comment.downvotes > comment.upvotes) weaknesses.add('Contested points present')
+  })
+  
+  return Array.from(weaknesses)
+}
+
+function getSuggestions(comments: any[]): string[] {
+  const suggestions = new Set<string>()
+  
+  // Analyze overall debate quality
+  const totalComments = comments.length
+  const sourcedComments = comments.filter(c => c.sources?.length).length
+  const verifiedComments = comments.filter(c => c.isVerified).length
+  
+  if (sourcedComments / totalComments < 0.5) {
+    suggestions.add('Consider adding more sources to support arguments')
+  }
+  
+  if (verifiedComments / totalComments < 0.3) {
+    suggestions.add('Encourage fact-checking of key claims')
+  }
+  
+  if (comments.some(c => c.content.length < 100)) {
+    suggestions.add('Expand on shorter arguments with more detail')
+  }
+  
+  return Array.from(suggestions)
 } 

@@ -52,8 +52,9 @@ export function DebateView({ debateId }: DebateViewProps) {
 
   // Add UUID validation function
   function isValidUUID(uuid: string) {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
+    // Basic format check for debate IDs
+    const basicFormat = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    return basicFormat.test(uuid.replace(/-/g, ''));
   }
 
   async function handleVote(isProVote: boolean) {
