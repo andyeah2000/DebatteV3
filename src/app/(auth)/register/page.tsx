@@ -69,13 +69,14 @@ export default function RegisterPage() {
       case 'password':
         validation = validatePassword(value)
         break
-      case 'confirmPassword':
+      case 'confirmPassword': {
         const password = (document.getElementById('password') as HTMLInputElement)?.value
         validation = {
           isValid: value === password,
           message: value === password ? '✓ Passwörter stimmen überein' : 'Passwörter stimmen nicht überein'
         }
         break
+      }
     }
 
     setValidationState(prev => ({
