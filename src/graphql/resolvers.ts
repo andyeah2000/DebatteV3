@@ -324,7 +324,13 @@ export const resolvers = {
           isProArgument: comment.is_pro_argument || false,
           upvotes: comment.upvotes || 0,
           downvotes: comment.downvotes || 0,
-          sources: comment.sources || [],
+          sources: (comment.sources || []).map((url: string, index: number) => ({
+            id: `${comment.id}-source-${index}`,
+            url,
+            title: url,
+            credibilityScore: null,
+            verificationStatus: 'PENDING'
+          })),
           isVerified: comment.is_verified || false,
           authorId: comment.author_id,
           debateId: comment.debate_id
