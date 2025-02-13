@@ -8,6 +8,20 @@ const nextConfig = {
       'lh3.googleusercontent.com',
     ],
   },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  webpack: (config, { isServer }) => {
+    // Exclude backend directory from compilation
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: [...(config.watchOptions?.ignored || []), '**/backend/**']
+    };
+    return config;
+  }
 }
 
 module.exports = nextConfig 

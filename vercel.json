@@ -13,5 +13,7 @@
     "env": {
       "NPM_FLAGS": "--legacy-peer-deps --force"
     }
-  }
+  },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./",
+  "outputDirectory": ".next"
 } 

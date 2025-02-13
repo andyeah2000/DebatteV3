@@ -1,0 +1,9 @@
+README.md
+.git
+.env
+.env.*
+backend/
+node_modules/
+.next/
+.vercel/
+*.log 
