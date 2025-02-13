@@ -84,7 +84,7 @@ export default function Error({
               Try again
             </Button>
             <Link href="/">
-              <Button asChild variant="outline" size="lg">Go back home</Button>
+              <Button variant="outline" size="lg">Go back home</Button>
             </Link>
           </motion.div>
         </motion.div>

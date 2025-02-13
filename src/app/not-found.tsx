@@ -46,10 +46,10 @@ export default function NotFound() {
             transition={{ duration: 0.5, delay: 0.5 }}
           >
             <Link href="/">
-              <Button asChild>Go back home</Button>
+              <Button>Go back home</Button>
             </Link>
             <Link href="/debates">
-              <Button asChild variant="outline">Browse debates</Button>
+              <Button variant="outline">Browse debates</Button>
             </Link>
           </motion.div>
         </motion.div>

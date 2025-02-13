@@ -85,10 +85,10 @@ export default function AboutPage() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link href="/debates">
-                <Button asChild>Explore Debates</Button>
+                <Button>Explore Debates</Button>
               </Link>
               <Link href="/register">
-                <Button asChild variant="outline">Join Us</Button>
+                <Button variant="outline">Join Us</Button>
               </Link>
             </div>
           </motion.div>

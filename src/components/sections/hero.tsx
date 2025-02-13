@@ -48,10 +48,10 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <Link href="/debates/new">
-              <Button asChild size="lg">Start a Debate</Button>
+              <Button size="lg">Start a Debate</Button>
             </Link>
             <Link href="/about">
-              <Button asChild variant="outline" size="lg">Learn More</Button>
+              <Button variant="outline" size="lg">Learn More</Button>
             </Link>
           </motion.div>
         </div>
