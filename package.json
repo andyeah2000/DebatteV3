@@ -58,7 +58,7 @@
     "typescript": "^5.3.3"
   },
   "overrides": {
-    "punycode": "^3.0.1"
+    "punycode": "2.1.1"
   },
   "description": "A fact-based platform for meaningful political debates and discussions. Built with Next.js, TypeScript, and modern web technologies.",
   "main": "tailwind.config.js",
