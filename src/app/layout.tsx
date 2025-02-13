@@ -1,3 +1,5 @@
++"use client";
+
 import { Inter, Roboto_Mono } from 'next/font/google'
 import { Providers } from './providers'
 import { Header } from '@/components/layout/header'
