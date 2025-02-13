@@ -172,371 +172,160 @@ export function DebateView({ debateId }: DebateViewProps) {
   const conComments = debate.comments.filter((comment: any) => !comment.isProArgument)
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="container mx-auto px-4 py-8"
+    >
       <div className="grid gap-8 md:grid-cols-3">
         {/* Main Debate Content */}
-        <div className="md:col-span-2">
-          <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-secondary-800">
+        <motion.div 
+          initial={{ x: -20 }}
+          animate={{ x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="md:col-span-2"
+        >
+          <div className="rounded-lg bg-card p-6 shadow-sm border border-border">
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <h1 className="mb-2 text-2xl font-bold text-secondary-900 dark:text-white">
+                <motion.h1 
+                  initial={{ y: -10 }}
+                  animate={{ y: 0 }}
+                  className="mb-2 text-2xl font-bold text-foreground"
+                >
                   {debate.title}
-                </h1>
+                </motion.h1>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-secondary-500 dark:text-secondary-400">
+                    <span className="text-sm text-muted-foreground">
                       Created by
                     </span>
                     <div className="flex items-center space-x-2">
                       {debate.author.avatarUrl && (
-                        <img
+                        <motion.img
+                          whileHover={{ scale: 1.1 }}
                           src={debate.author.avatarUrl}
                           alt={debate.author.username}
-                          className="h-6 w-6 rounded-full"
+                          className="h-6 w-6 rounded-full ring-2 ring-border"
                         />
                       )}
-                      <span className="font-medium text-secondary-900 dark:text-white">
+                      <span className="font-medium text-foreground">
                         {debate.author.username}
                       </span>
                     </div>
                   </div>
-                  <span className="text-sm text-secondary-500 dark:text-secondary-400">
+                  <span className="text-sm text-muted-foreground">
                     {formatDate(debate.createdAt)}
                   </span>
                 </div>
               </div>
               {session?.user && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push('/debates/new')}
-                >
-                  Start New Debate
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push('/debates/new')}
+                    className="transition-all duration-200"
+                  >
+                    Start New Debate
+                  </Button>
+                </motion.div>
               )}
             </div>
 
-            <p className="text-secondary-600 dark:text-secondary-400">
+            <p className="text-muted-foreground leading-relaxed">
               {debate.description}
             </p>
 
             {/* Tags */}
             {debate.tags && debate.tags.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-4 flex flex-wrap gap-2"
+              >
                 {debate.tags.map((tag: string) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-secondary-100 px-3 py-1 text-sm text-secondary-700 dark:bg-secondary-800 dark:text-secondary-300"
+                    className="rounded-full bg-secondary/20 px-3 py-1 text-sm text-secondary-foreground"
                   >
                     {tag}
                   </span>
                 ))}
-              </div>
+              </motion.div>
             )}
 
             {/* Debate Statistics */}
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div className="rounded-lg bg-secondary-50 p-4 dark:bg-secondary-800/50">
-                <div className="text-sm text-secondary-500 dark:text-secondary-400">
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                className="rounded-lg bg-card p-4 border border-border/50 transition-colors hover:bg-accent/5"
+              >
+                <div className="text-sm text-muted-foreground">
                   Participants
                 </div>
-                <div className="text-2xl font-semibold text-secondary-900 dark:text-white">
+                <div className="text-2xl font-semibold text-foreground">
                   {debate.participantsCount}
                 </div>
-              </div>
-              <div className="rounded-lg bg-secondary-50 p-4 dark:bg-secondary-800/50">
-                <div className="text-sm text-secondary-500 dark:text-secondary-400">
+              </motion.div>
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                className="rounded-lg bg-card p-4 border border-border/50 transition-colors hover:bg-accent/5"
+              >
+                <div className="text-sm text-muted-foreground">
                   Views
                 </div>
-                <div className="text-2xl font-semibold text-secondary-900 dark:text-white">
+                <div className="text-2xl font-semibold text-foreground">
                   {debate.viewCount}
                 </div>
-              </div>
-              <div className="rounded-lg bg-secondary-50 p-4 dark:bg-secondary-800/50">
-                <div className="text-sm text-secondary-500 dark:text-secondary-400">
+              </motion.div>
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                className="rounded-lg bg-card p-4 border border-border/50 transition-colors hover:bg-accent/5"
+              >
+                <div className="text-sm text-muted-foreground">
                   Quality Score
                 </div>
-                <div className="text-2xl font-semibold text-secondary-900 dark:text-white">
+                <div className="text-2xl font-semibold text-foreground">
                   {debate.qualityScore}/100
                 </div>
-              </div>
-              <div className="rounded-lg bg-secondary-50 p-4 dark:bg-secondary-800/50">
-                <div className="text-sm text-secondary-500 dark:text-secondary-400">
+              </motion.div>
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                className="rounded-lg bg-card p-4 border border-border/50 transition-colors hover:bg-accent/5"
+              >
+                <div className="text-sm text-muted-foreground">
                   Source Quality
                 </div>
-                <div className="text-2xl font-semibold text-secondary-900 dark:text-white">
+                <div className="text-2xl font-semibold text-foreground">
                   {debate.sourceQualityScore}/100
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
+        </motion.div>
 
-          {/* Arguments Section */}
-          <div className="mt-8">
-            {error && (
-              <div className="mb-4 rounded-md bg-red-50 p-4 dark:bg-red-900/10">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            <ArgumentsSection
-              proComments={proComments || []}
-              conComments={conComments || []}
-              onVote={handleVote}
-              onReply={(commentId: string) => {
-                // Handle reply
-              }}
-              isLoggedIn={!!session?.user}
-            />
-          </div>
-
-          {/* Comment Form */}
-          {session?.user && (
-            <div className="mt-8 rounded-lg bg-white p-6 shadow-sm dark:bg-secondary-800">
-              <h3 className="mb-4 text-lg font-semibold text-secondary-900 dark:text-white">
-                Add Your Argument
-              </h3>
-              <form onSubmit={handleCommentSubmit}>
-                <div className="mb-4">
-                  <label className="mb-2 block text-sm font-medium text-secondary-700 dark:text-secondary-300">
-                    Your Position
-                  </label>
-                  <div className="flex gap-4">
-                    <Button
-                      type="button"
-                      variant={isProArgument === true ? 'default' : 'outline'}
-                      onClick={() => setIsProArgument(true)}
-                      className={isProArgument === true ? 'bg-green-500 hover:bg-green-600' : ''}
-                    >
-                      Pro
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={isProArgument === false ? 'default' : 'outline'}
-                      onClick={() => setIsProArgument(false)}
-                      className={isProArgument === false ? 'bg-red-500 hover:bg-red-600' : ''}
-                    >
-                      Con
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label
-                    htmlFor="comment"
-                    className="mb-2 block text-sm font-medium text-secondary-700 dark:text-secondary-300"
-                  >
-                    Your Argument
-                  </label>
-                  <textarea
-                    id="comment"
-                    rows={4}
-                    className="w-full rounded-lg border border-secondary-300 bg-white p-2.5 text-sm text-secondary-900 focus:border-primary-500 focus:ring-primary-500 dark:border-secondary-600 dark:bg-secondary-700 dark:text-white dark:placeholder-secondary-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
-                    placeholder="Write your argument here..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    data-testid="comment-input"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="mb-2 block text-sm font-medium text-secondary-700 dark:text-secondary-300">
-                    Sources (Optional)
-                  </label>
-                  <div className="space-y-2">
-                    {sources.map((source, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={source}
-                          onChange={(e) => {
-                            const newSources = [...sources]
-                            newSources[index] = e.target.value
-                            setSources(newSources)
-                          }}
-                          className="flex-1 rounded-lg border border-secondary-300 bg-white p-2 text-sm text-secondary-900 focus:border-primary-500 focus:ring-primary-500 dark:border-secondary-600 dark:bg-secondary-700 dark:text-white dark:placeholder-secondary-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
-                          placeholder="Enter source URL"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            const newSources = sources.filter((_, i) => i !== index)
-                            setSources(newSources)
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setSources([...sources, ''])}
-                    >
-                      Add Source
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={!newComment || isProArgument === null}
-                    data-testid="submit-comment"
-                  >
-                    Post Argument
-                  </Button>
-                </div>
-              </form>
-            </div>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-8">
-          {/* Timeline Component */}
-          <Timeline
-            events={debate.timeline}
-            phases={debate.phases}
-            currentPhase={debate.currentPhase}
+        {/* Arguments Section */}
+        <motion.div
+          initial={{ x: 20 }}
+          animate={{ x: 0 }}
+          transition={{ delay: 0.4 }}
+          className="md:col-span-1"
+        >
+          <ArgumentsSection
+            proComments={proComments}
+            conComments={conComments}
+            onVote={handleVote}
+            onReply={(commentId: string) => {
+              // Handle reply logic here
+              console.log('Reply to comment:', commentId);
+            }}
+            isLoggedIn={!!session?.user}
           />
-
-          {/* Vote Statistics */}
-          <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-secondary-800">
-            <h3 className="mb-4 text-lg font-semibold text-secondary-900 dark:text-white">
-              Vote Distribution
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                    Pro
-                  </span>
-                  <span className="text-sm text-secondary-500" data-testid="pro-votes">
-                    {Number(debate.voteStatistics.proPercentage).toFixed(1)}%
-                  </span>
-                </div>
-                <div className="h-2 w-full rounded-full bg-secondary-200 dark:bg-secondary-700">
-                  <div
-                    className="h-2 rounded-full bg-green-500"
-                    style={{ width: `${debate.voteStatistics.proPercentage}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-red-600 dark:text-red-400">
-                    Con
-                  </span>
-                  <span className="text-sm text-secondary-500" data-testid="con-votes">
-                    {Number(debate.voteStatistics.conPercentage).toFixed(1)}%
-                  </span>
-                </div>
-                <div className="h-2 w-full rounded-full bg-secondary-200 dark:bg-secondary-700">
-                  <div
-                    className="h-2 rounded-full bg-red-500"
-                    style={{ width: `${debate.voteStatistics.conPercentage}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {!hasVoted && session?.user && (
-              <div className="mt-6 flex space-x-4">
-                <Button
-                  onClick={() => handleVote(true)}
-                  className="flex-1 bg-green-500 hover:bg-green-600"
-                  disabled={!debateId || !isValidUUID(debateId)}
-                  data-testid="pro-vote-button"
-                >
-                  Vote Pro
-                </Button>
-                <Button
-                  onClick={() => handleVote(false)}
-                  className="flex-1 bg-red-500 hover:bg-red-600"
-                  disabled={!debateId || !isValidUUID(debateId)}
-                  data-testid="con-vote-button"
-                >
-                  Vote Con
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* AI Analysis */}
-          {debate.metadata?.aiAnalysis && (
-            <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-secondary-800">
-              <h3 className="mb-4 text-lg font-semibold text-secondary-900 dark:text-white">
-                AI Analysis
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm text-secondary-500">Argument Quality</span>
-                    <span className="text-sm font-medium text-secondary-900 dark:text-white">
-                      {debate.metadata.aiAnalysis.argumentQuality}%
-                    </span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-secondary-200 dark:bg-secondary-700">
-                    <div
-                      className="h-2 rounded-full bg-primary-500"
-                      style={{
-                        width: `${debate.metadata.aiAnalysis.argumentQuality}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {debate.metadata.aiAnalysis.biasLevel !== undefined && (
-                  <div>
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm text-secondary-500">Bias Level</span>
-                      <span className="text-sm font-medium text-secondary-900 dark:text-white">
-                        {debate.metadata.aiAnalysis.biasLevel}%
-                      </span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-secondary-200 dark:bg-secondary-700">
-                      <div
-                        className="h-2 rounded-full bg-yellow-500"
-                        style={{
-                          width: `${debate.metadata.aiAnalysis.biasLevel}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {debate.metadata.biasTypes.length > 0 && (
-                  <div>
-                    <h4 className="mb-2 text-sm font-medium text-secondary-900 dark:text-white">
-                      Detected Bias Types
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {debate.metadata.biasTypes.map((bias: string) => (
-                        <span
-                          key={bias}
-                          className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                        >
-                          {bias}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 } 

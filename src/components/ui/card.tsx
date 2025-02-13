@@ -1,25 +1,27 @@
 import * as React from "react"
-
+import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     hover?: boolean
-    variant?: 'default' | 'secondary' | 'outline' | 'ghost'
+    variant?: 'default' | 'secondary' | 'outline' | 'ghost' | 'debate-pro' | 'debate-contra'
     size?: 'sm' | 'default' | 'lg'
   }
 >(({ className, hover = false, variant = 'default', size = 'default', ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground transition-all duration-200",
+      "rounded-lg border bg-card text-card-foreground",
       {
-        'shadow-sm hover:shadow-md hover:translate-y-[-2px]': hover,
+        'shadow-sm hover:shadow-md transition-all duration-200 hover:translate-y-[-2px]': hover,
         'border-border': variant === 'default',
         'bg-secondary border-secondary': variant === 'secondary',
         'border-border bg-transparent': variant === 'outline',
         'border-transparent bg-transparent': variant === 'ghost',
+        'border-green-200 bg-green-50/30 dark:bg-green-950/30': variant === 'debate-pro',
+        'border-red-200 bg-red-50/30 dark:bg-red-950/30': variant === 'debate-contra',
         'p-4': size === 'sm',
         'p-6': size === 'default',
         'p-8': size === 'lg',
