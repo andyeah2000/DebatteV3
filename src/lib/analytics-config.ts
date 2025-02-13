@@ -1,5 +1,3 @@
-'use server'
-
 import { AnalyticsProps, BeforeSendEvent } from '@vercel/analytics/react'
 
 // Client-side URL sanitization
@@ -28,7 +26,7 @@ function processAnalyticsEvent(event: BeforeSendEvent): BeforeSendEvent | null {
 }
 
 export const analyticsConfig: AnalyticsProps = {
-  mode: 'production',
-  debug: false,
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  debug: process.env.NODE_ENV === 'development',
   beforeSend: processAnalyticsEvent
 } 
