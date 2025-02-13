@@ -33,12 +33,12 @@ export default function HomePage() {
           Engage in meaningful debates, share your perspective, and contribute to a more informed discourse.
         </p>
         <div className="flex gap-4 justify-center">
-          <Link href="/debates/new">
-            <Button>Start a Debate</Button>
-          </Link>
-          <Link href="/debates">
-            <Button variant="outline">Browse Debates</Button>
-          </Link>
+          <Button asChild>
+            <Link href="/debates/new">Start a Debate</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/debates">Browse Debates</Link>
+          </Button>
         </div>
       </section>
     </main>

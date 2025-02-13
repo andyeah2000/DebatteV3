@@ -84,12 +84,12 @@ export default function AboutPage() {
               fact-based discussions, civil discourse, and mutual understanding.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link href="/debates">
-                <Button>Explore Debates</Button>
-              </Link>
-              <Link href="/register">
-                <Button variant="outline">Join Us</Button>
-              </Link>
+              <Button asChild>
+                <Link href="/debates">Explore Debates</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/register">Join Us</Link>
+              </Button>
             </div>
           </motion.div>
         </div>

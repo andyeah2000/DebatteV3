@@ -45,12 +45,12 @@ export default function NotFound() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Link href="/">
-              <Button>Go back home</Button>
-            </Link>
-            <Link href="/debates">
-              <Button variant="outline">Browse debates</Button>
-            </Link>
+            <Button asChild>
+              <Link href="/">Go back home</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/debates">Browse debates</Link>
+            </Button>
           </motion.div>
         </motion.div>
 
