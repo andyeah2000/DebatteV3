@@ -217,8 +217,6 @@ export default function DebateDetailPage() {
                 createdAt
                 scheduledEndTime
                 participantsCount
-                proVotes
-                conVotes
                 tags
                 isActive
                 viewCount

@@ -14,8 +14,13 @@ const mockDebate = {
     avatarUrl: 'https://example.com/avatar.jpg',
   },
   category: 'Politics',
-  proVotes: 5,
-  conVotes: 3,
+  voteStatistics: {
+    totalVotes: 8,
+    proVotes: 5,
+    conVotes: 3,
+    proPercentage: 62.5,
+    conPercentage: 37.5
+  },
   commentsCount: 2,
 }
 

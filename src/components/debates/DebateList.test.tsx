@@ -15,8 +15,13 @@ const mockDebates = [
       avatarUrl: 'https://example.com/avatar1.jpg',
     },
     category: 'Politics',
-    proVotes: 10,
-    conVotes: 5,
+    voteStatistics: {
+      totalVotes: 15,
+      proVotes: 10,
+      conVotes: 5,
+      proPercentage: 66.7,
+      conPercentage: 33.3
+    },
     commentsCount: 3,
   },
   {
@@ -30,8 +35,13 @@ const mockDebates = [
       avatarUrl: 'https://example.com/avatar2.jpg',
     },
     category: 'Technology',
-    proVotes: 7,
-    conVotes: 3,
+    voteStatistics: {
+      totalVotes: 10,
+      proVotes: 7,
+      conVotes: 3,
+      proPercentage: 70,
+      conPercentage: 30
+    },
     commentsCount: 1,
   },
 ]
