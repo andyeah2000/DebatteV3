@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    # Look for `package.json` and `lock` files in the `root` directory
+    directory: "/"
+    # Check for updates once a week
+    schedule:
+      interval: "weekly"
+    # Specify labels for pull requests
+    labels:
+      - "dependencies"
+      - "automerge"
+    # Allow up to 10 open pull requests at a time
+    open-pull-requests-limit: 10
+    # Configure automatic merging
+    automerge: true
+    # Configure version update behavior
+    versioning-strategy: auto
+    # Configure commit message
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # Configure reviewers
+    reviewers:
+      - "andyeah2000"
+    # Configure target branch
+    target-branch: "main"
+    # Configure security updates
+    security:
+      updates: true 

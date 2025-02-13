@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
+import Image from 'next/image'
 
 interface User {
   id: string
@@ -170,10 +171,13 @@ export default function UserProfilePage() {
         {/* Profile Header */}
         <div className="rounded-lg bg-white p-6 shadow dark:bg-secondary-800">
           <div className="flex items-start space-x-6">
-            <img
+            <Image
               src={user.avatarUrl || `https://ui-avatars.com/api/?name=${user.username}`}
               alt={user.username}
-              className="h-24 w-24 rounded-full"
+              width={96}
+              height={96}
+              className="rounded-full"
+              priority
             />
             <div className="flex-1">
               <div className="flex items-center space-x-4">
@@ -288,7 +292,7 @@ export default function UserProfilePage() {
                     <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 10.586V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
                         clipRule="evenodd"
                       />
                     </svg>

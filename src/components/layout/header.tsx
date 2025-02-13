@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -62,10 +63,13 @@ export function Header() {
                   Settings
                 </Link>
                 <Link href={`/users/${session.user.id}`}>
-                  <img
-                    className="h-8 w-8 rounded-full"
+                  <Image
+                    className="rounded-full"
                     src={session.user.image || `https://ui-avatars.com/api/?name=${session.user.name}`}
                     alt={session.user.name}
+                    width={32}
+                    height={32}
+                    priority
                   />
                 </Link>
                 <Button

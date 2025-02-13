@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "update-deps": "npm update && npm outdated",
+    "update-deps:interactive": "npx npm-check -u",
+    "security-audit": "npm audit && npm audit fix"
   },
   "dependencies": {
     "@apollo/client": "^3.9.5",
@@ -20,8 +23,9 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@sentry/nextjs": "^7.101.1",
     "@types/next-auth": "^3.15.0",
-    "@vercel/analytics": "^1.2.2",
+    "@vercel/analytics": "^1.5.0",
     "@vercel/postgres": "^0.7.2",
+    "@vercel/speed-insights": "^1.2.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
