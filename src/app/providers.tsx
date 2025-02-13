@@ -7,6 +7,7 @@ import { MotionConfig } from 'framer-motion'
 import { onError } from '@apollo/client/link/error'
 import { HttpLink } from '@apollo/client/link/http'
 import { RetryLink } from '@apollo/client/link/retry'
+import { useMemo } from 'react'
 
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
   if (graphQLErrors) {
@@ -51,31 +52,32 @@ const httpLink = new HttpLink({
   }
 })
 
-const client = new ApolloClient({
-  link: from([errorLink, retryLink, httpLink]),
-  cache: new InMemoryCache(),
-  defaultOptions: {
-    watchQuery: {
-      fetchPolicy: 'cache-and-network',
-      errorPolicy: 'all',
-      notifyOnNetworkStatusChange: true,
-    },
-    query: {
-      fetchPolicy: 'network-only',
-      errorPolicy: 'all',
-      notifyOnNetworkStatusChange: true,
-    },
-    mutate: {
-      errorPolicy: 'all',
-    },
-  },
-})
-
 interface ProvidersProps {
   children: React.ReactNode
 }
 
 export function Providers({ children }: ProvidersProps) {
+  const client = useMemo(() => new ApolloClient({
+    link: from([errorLink, retryLink, httpLink]),
+    cache: new InMemoryCache(),
+    defaultOptions: {
+      watchQuery: {
+        fetchPolicy: 'cache-and-network',
+        errorPolicy: 'all',
+        notifyOnNetworkStatusChange: true,
+      },
+      query: {
+        fetchPolicy: 'network-only',
+        errorPolicy: 'all',
+        notifyOnNetworkStatusChange: true,
+      },
+      mutate: {
+        errorPolicy: 'all',
+      },
+    },
+    connectToDevTools: process.env.NODE_ENV === 'development'
+  }), [])
+
   return (
     <SessionProvider>
       <ApolloProvider client={client}>

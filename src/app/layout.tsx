@@ -76,11 +76,6 @@ export const metadata: Metadata = {
     description: 'A fact-based platform for meaningful political debates and discussions.',
     images: ['https://debattle.com/twitter-image.png'],
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
@@ -93,9 +88,28 @@ export const viewport = {
   userScalable: false,
 }
 
-export function reportWebVitals(metric: any) {
-  if (metric.label === 'web-vital' || metric.label === 'custom') {
-    console.log(metric) // Send to your analytics service
+interface WebVitalsMetric {
+  id: string
+  name: string
+  value: number
+  label: 'web-vital' | 'custom'
+  startTime: number
+  duration: number
+}
+
+export function reportWebVitals(metric: WebVitalsMetric) {
+  // Only log in development or if explicitly enabled
+  if (process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true') {
+    // Log to console
+    console.log({
+      name: metric.name,
+      value: metric.value,
+      label: metric.label,
+      id: metric.id,
+    })
+    
+    // Here you could also send to your analytics service
+    // Example: analytics.track('Web Vital', { ...metric })
   }
 }
 
@@ -112,10 +126,7 @@ export default function RootLayout({
           <ServiceWorkerRegistrator />
           {children}
           <Analytics {...analyticsConfig} />
-          <SpeedInsights 
-            sampleRate={25}
-            debug={false}
-          />
+          <SpeedInsights />
         </Providers>
       </body>
     </html>
