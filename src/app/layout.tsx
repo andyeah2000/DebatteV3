@@ -110,8 +110,25 @@ export default function RootLayout({
           <Header />
           <ServiceWorkerRegistrator />
           {children}
-          <Analytics />
-          <SpeedInsights />
+          <Analytics 
+            mode={'production'} 
+            debug={false}
+            beforeSend={(event) => {
+              // Filter out sensitive information
+              if (event.url) {
+                const url = new URL(event.url)
+                if (url.searchParams.has('token')) {
+                  url.searchParams.delete('token')
+                  event.url = url.toString()
+                }
+              }
+              return event
+            }}
+          />
+          <SpeedInsights 
+            sampleRate={25}
+            debug={false}
+          />
         </Providers>
       </body>
     </html>

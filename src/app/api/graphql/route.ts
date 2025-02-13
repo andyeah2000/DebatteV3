@@ -19,8 +19,6 @@ const { handleRequest } = createYoga({
   graphiql: process.env.NODE_ENV === 'development'
 })
 
-export const runtime = 'edge'
-
 export async function POST(request: NextRequest) {
   const response = await handleRequest(request, { req: request, res: new NextResponse() })
   return response

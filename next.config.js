@@ -20,6 +20,15 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@nestjs/common', '@nestjs/typeorm'],
   },
   webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        crypto: require.resolve('crypto-browserify'),
+        stream: require.resolve('stream-browserify'),
+        util: require.resolve('util/'),
+      };
+    }
+
     // Exclude backend directory from compilation
     config.watchOptions = {
       ...config.watchOptions,
