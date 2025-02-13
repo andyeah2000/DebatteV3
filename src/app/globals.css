@@ -4,37 +4,152 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Color System */
+    --color-primary: 0 112 243;    /* #0070F3 */
+    --color-secondary: 245 245 245; /* #F5F5F5 */
+    --color-text: 51 51 51;        /* #333333 */
+    --color-accent: 255 107 0;     /* #FF6B00 */
+    
+    /* Spacing System */
+    --space-base: 1rem;            /* 16px */
+    --space-xs: calc(var(--space-base) * 0.25);  /* 4px */
+    --space-sm: calc(var(--space-base) * 0.5);   /* 8px */
+    --space-md: var(--space-base);               /* 16px */
+    --space-lg: calc(var(--space-base) * 1.5);   /* 24px */
+    --space-xl: calc(var(--space-base) * 2);     /* 32px */
+    --space-2xl: calc(var(--space-base) * 3);    /* 48px */
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;          /* 4px */
+    --radius-md: 0.5rem;           /* 8px */
+    --radius-lg: 0.75rem;          /* 12px */
+    --radius-full: 9999px;
+    
+    /* Typography */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
+    
+    /* Font Sizes */
+    --text-xs: 0.75rem;    /* 12px */
+    --text-sm: 0.875rem;   /* 14px */
+    --text-base: 1rem;     /* 16px */
+    --text-lg: 1.125rem;   /* 18px */
+    --text-xl: 1.25rem;    /* 20px */
+    --text-2xl: 1.5rem;    /* 24px */
+    --text-3xl: 1.875rem;  /* 30px */
+    --text-4xl: 2.25rem;   /* 36px */
+    
+    /* Line Heights */
+    --leading-none: 1;
+    --leading-tight: 1.25;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.75;
+    
+    /* Transitions */
+    --transition-fast: 150ms;
+    --transition-normal: 250ms;
+    --transition-slow: 350ms;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    
+    /* Z-Index Layers */
+    --z-negative: -1;
+    --z-elevate: 1;
+    --z-sticky: 100;
+    --z-drawer: 200;
+    --z-modal: 300;
+    --z-popover: 400;
+    --z-toast: 500;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 0 0% 100%;
+    --color-primary: 29 78 216;     /* Angepasstes Blau für Dark Mode */
+    --color-secondary: 30 41 59;    /* Dunklerer Hintergrund */
+    --color-text: 241 245 249;      /* Hellerer Text */
+    --color-accent: 249 115 22;     /* Wärmeres Orange */
   }
 }
 
 @layer base {
+  /* Base Styles */
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
   body {
     @apply bg-background text-foreground min-h-screen;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+    margin-bottom: var(--space-md);
+  }
+
+  h1 { font-size: var(--text-4xl); }
+  h2 { font-size: var(--text-3xl); }
+  h3 { font-size: var(--text-2xl); }
+  h4 { font-size: var(--text-xl); }
+  h5 { font-size: var(--text-lg); }
+  h6 { font-size: var(--text-base); }
+
+  /* Links */
+  a {
+    @apply text-primary hover:text-primary/90 transition-colors;
+  }
+
+  /* Focus Styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
   }
 }
 
-/* Custom scrollbar styles */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-secondary-100;
+  @apply bg-secondary/30;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-secondary-300 rounded-full hover:bg-secondary-400 transition-colors;
+  @apply bg-secondary-600/50 rounded-full hover:bg-secondary-600/70 transition-colors;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  :root {
+    --text-base: 1.125rem; /* 18px auf Mobile */
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Größere Touch-Targets auf Mobile */
+  button, 
+  [role="button"],
+  input[type="submit"],
+  input[type="reset"],
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body {
+    @apply text-black bg-white;
+  }
 } 
