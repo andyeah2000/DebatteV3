@@ -1,54 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { PortManager } from '@/config/ports'
-
-// Get the backend URL from environment variables
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:4000/graphql'
-
-// Get the backend port from the PortManager
-const portManager = PortManager.getInstance()
-const BACKEND_URL_WITH_PORT = `http://127.0.0.1:${portManager.getBackendPort()}/graphql`
-
-async function retryWithBackoff(
-  fn: () => Promise<Response>,
-  maxRetries: number = 5,
-  initialDelay: number = 300,
-): Promise<Response> {
-  let retries = 0
-  let delay = initialDelay
-
-  while (retries < maxRetries) {
-    try {
-      const response = await fn()
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      return response
-    } catch (error) {
-      retries++
-      console.log(`Retry attempt ${retries} of ${maxRetries}...`)
-      if (retries === maxRetries) throw error
-
-      await new Promise(resolve => setTimeout(resolve, delay))
-      delay *= 2
-    }
-  }
-
-  throw new Error('Max retries reached')
-}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const headersList = headers()
-    
-    // Debug logging for incoming request
-    console.log('Incoming request to proxy:', {
-      url: req.url,
-      method: req.method,
-      headers: Object.fromEntries(req.headers.entries()),
-      body
-    })
     
     // Forward headers from the client request
     const forwardHeaders = new Headers()
@@ -64,57 +20,21 @@ export async function POST(req: NextRequest) {
     forwardHeaders.set('content-type', 'application/json')
     forwardHeaders.set('accept-encoding', 'identity')
 
-    // Debug logging for forwarded headers
-    console.log('Forwarding request to backend with headers:', 
-      Object.fromEntries(forwardHeaders.entries())
-    )
-
-    const response = await retryWithBackoff(async () => {
-      console.log('Attempting to connect to backend at:', BACKEND_URL)
-      const res = await fetch(BACKEND_URL, {
-        method: 'POST',
-        headers: forwardHeaders,
-        body: JSON.stringify(body),
-        credentials: 'include',
-      })
-
-      // Log the response status and headers
-      console.log('Backend response:', {
-        status: res.status,
-        statusText: res.statusText,
-        headers: Object.fromEntries(res.headers.entries())
-      })
-
-      // Clone the response to read it twice
-      const resClone = res.clone()
-      const responseText = await resClone.text()
-      console.log('Backend response body:', responseText)
-
-      if (!res.ok) {
-        console.error('Backend response not OK:', {
-          status: res.status,
-          statusText: res.statusText,
-          headers: Object.fromEntries(res.headers.entries()),
-          body: responseText
-        })
-        throw new Error(`GraphQL request failed with status ${res.status}`)
-      }
-
-      return res
+    const response = await fetch(process.env.API_URL || 'http://localhost:4000/graphql', {
+      method: 'POST',
+      headers: forwardHeaders,
+      body: JSON.stringify(body),
+      cache: 'no-store'
     })
 
-    const responseData = await response.json()
+    if (!response.ok) {
+      throw new Error(`GraphQL request failed with status ${response.status}`)
+    }
 
-    // Create response headers without content-length initially
-    const responseHeaders = new Headers()
-    response.headers.forEach((value, key) => {
-      if (key.toLowerCase() !== 'content-encoding' && 
-          key.toLowerCase() !== 'content-length') {
-        responseHeaders.set(key, value)
-      }
-    })
+    const data = await response.json()
 
     // Set CORS headers
+    const responseHeaders = new Headers()
     responseHeaders.set('Access-Control-Allow-Credentials', 'true')
     responseHeaders.set('Content-Type', 'application/json')
     const origin = req.headers.get('origin')
@@ -122,34 +42,16 @@ export async function POST(req: NextRequest) {
       responseHeaders.set('Access-Control-Allow-Origin', origin)
     }
 
-    // Ensure no compression/encoding headers are present
-    responseHeaders.delete('content-encoding')
-    responseHeaders.set('content-encoding', 'identity')
-    responseHeaders.set('transfer-encoding', 'identity')
-
-    // Convert response data to JSON string
-    const jsonResponse = JSON.stringify(responseData)
-
-    // Debug logging for final response
-    console.log('Sending response to client:', {
-      status: response.status,
-      headers: Object.fromEntries(responseHeaders.entries()),
-      dataLength: jsonResponse.length,
-      data: responseData
-    })
-
-    return new NextResponse(jsonResponse, {
-      status: response.status,
-      headers: responseHeaders,
+    return new NextResponse(JSON.stringify(data), {
+      status: 200,
+      headers: responseHeaders
     })
   } catch (error) {
     console.error('GraphQL proxy error:', error)
     
     const errorHeaders = new Headers({
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Credentials': 'true',
-      'Content-Encoding': 'identity',
-      'Transfer-Encoding': 'identity'
+      'Access-Control-Allow-Credentials': 'true'
     })
 
     const origin = req.headers.get('origin')
@@ -157,29 +59,28 @@ export async function POST(req: NextRequest) {
       errorHeaders.set('Access-Control-Allow-Origin', origin)
     }
 
-    const errorResponse = JSON.stringify({ 
+    return new NextResponse(JSON.stringify({ 
       errors: [{ 
-        message: error instanceof Error ? error.message : 'Failed to connect to backend service',
-        details: error instanceof Error ? error.stack : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Failed to connect to backend service'
       }] 
-    })
-
-    return new NextResponse(errorResponse, { 
-      status: 503,
+    }), { 
+      status: 500,
       headers: errorHeaders
     })
   }
 }
 
 export async function OPTIONS(req: NextRequest) {
+  const responseHeaders = new Headers({
+    'Access-Control-Allow-Origin': req.headers.get('origin') || '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Max-Age': '86400'
+  })
+
   return new NextResponse(null, {
     status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': req.headers.get('origin') || '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Accept, Origin, X-Requested-With, Accept-Encoding',
-      'Access-Control-Allow-Credentials': 'true',
-      'Access-Control-Max-Age': '86400',
-    },
+    headers: responseHeaders
   })
 } 
