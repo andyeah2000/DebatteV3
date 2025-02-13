@@ -312,11 +312,27 @@ export const resolvers = {
     },
 
     comments: async (debate: any) => {
-      const { rows } = await pool.query(
-        'SELECT * FROM comments WHERE debate_id = $1 ORDER BY created_at DESC',
-        [debate.id]
-      )
-      return rows
+      try {
+        const { rows } = await pool.query(
+          'SELECT * FROM comments WHERE debate_id = $1 ORDER BY created_at DESC',
+          [debate.id]
+        )
+        return rows.map(comment => ({
+          ...comment,
+          createdAt: comment.created_at || null,
+          updatedAt: comment.updated_at || null,
+          isProArgument: comment.is_pro_argument || false,
+          upvotes: comment.upvotes || 0,
+          downvotes: comment.downvotes || 0,
+          sources: comment.sources || [],
+          isVerified: comment.is_verified || false,
+          authorId: comment.author_id,
+          debateId: comment.debate_id
+        }))
+      } catch (error) {
+        console.error('Error in debate.comments resolver:', error)
+        return []
+      }
     },
 
     timeline: async (debate: any) => {
@@ -426,37 +442,49 @@ export const resolvers = {
     },
 
     debate: async (comment: any) => {
-      const { rows } = await pool.query(
-        'SELECT * FROM debates WHERE id = $1',
-        [comment.debate_id]
-      )
-      return {
-        ...rows[0],
-        createdAt: rows[0].created_at,
-        updatedAt: rows[0].updated_at,
-        isActive: rows[0].is_active,
-        isFeatured: rows[0].is_featured,
-        viewCount: rows[0].view_count,
-        participantsCount: rows[0].participants_count,
-        authorId: rows[0].author_id,
-        qualityScore: calculateQualityScore(rows[0]),
-        sourceQualityScore: calculateSourceQualityScore(rows[0]),
-        currentPhase: calculateCurrentPhase(rows[0])
+      try {
+        if (!comment.debate_id) return null
+        const { rows } = await pool.query(
+          'SELECT * FROM debates WHERE id = $1',
+          [comment.debate_id]
+        )
+        if (!rows[0]) return null
+        return {
+          ...rows[0],
+          createdAt: rows[0].created_at || null,
+          updatedAt: rows[0].updated_at || null,
+          isActive: rows[0].is_active || false,
+          isFeatured: rows[0].is_featured || false,
+          viewCount: rows[0].view_count || 0,
+          participantsCount: rows[0].participants_count || 0,
+          authorId: rows[0].author_id,
+          qualityScore: calculateQualityScore(rows[0]),
+          sourceQualityScore: calculateSourceQualityScore(rows[0]),
+          currentPhase: calculateCurrentPhase(rows[0])
+        }
+      } catch (error) {
+        console.error('Error in comment.debate resolver:', error)
+        throw new Error('Failed to fetch comment debate')
       }
     },
 
     media: async (comment: any) => {
-      const { rows } = await pool.query(
-        'SELECT * FROM media WHERE comment_id = $1',
-        [comment.id]
-      )
-      return rows.map(media => ({
-        ...media,
-        type: media.type,
-        url: media.url,
-        title: media.title,
-        description: media.description
-      }))
+      try {
+        const { rows } = await pool.query(
+          'SELECT * FROM media WHERE comment_id = $1',
+          [comment.id]
+        )
+        return rows.map(media => ({
+          ...media,
+          type: media.type || 'image',
+          url: media.url,
+          title: media.title || '',
+          description: media.description || null
+        }))
+      } catch (error) {
+        console.error('Error in comment.media resolver:', error)
+        return []
+      }
     },
 
     metadata: async (comment: any) => {
