@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { Analytics } from '@vercel/analytics/react'
 import { Metadata } from 'next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { analyticsConfig } from '@/lib/analytics-config'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -110,21 +111,7 @@ export default function RootLayout({
           <Header />
           <ServiceWorkerRegistrator />
           {children}
-          <Analytics 
-            mode={'production'} 
-            debug={false}
-            beforeSend={(event) => {
-              // Filter out sensitive information
-              if (event.url) {
-                const url = new URL(event.url)
-                if (url.searchParams.has('token')) {
-                  url.searchParams.delete('token')
-                  event.url = url.toString()
-                }
-              }
-              return event
-            }}
-          />
+          <Analytics {...analyticsConfig} />
           <SpeedInsights 
             sampleRate={25}
             debug={false}
