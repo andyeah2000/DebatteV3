@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createYoga } from 'graphql-yoga'
-import { createSchema } from '@graphql-tools/schema'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { typeDefs } from '@/graphql/schema'
 import { resolvers } from '@/graphql/resolvers'
@@ -19,12 +18,12 @@ const { handleRequest } = createYoga({
   context: createContext,
 })
 
-export async function POST(request: NextRequest) {
-  return handleRequest(request)
+export async function POST(request: NextRequest, ctx: any) {
+  return handleRequest(request, ctx)
 }
 
-export async function GET(request: NextRequest) {
-  return handleRequest(request)
+export async function GET(request: NextRequest, ctx: any) {
+  return handleRequest(request, ctx)
 }
 
 // Enable CORS
@@ -39,4 +38,4 @@ export async function OPTIONS(request: NextRequest) {
     }
   })
   return response
-} 
+}
