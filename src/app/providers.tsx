@@ -32,18 +32,30 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 const retryLink = new RetryLink({
   delay: {
     initial: 300,
-    max: Infinity,
+    max: 3000,
     jitter: true
   },
   attempts: {
-    max: 5,
-    retryIf: (error, _operation) => !!error
+    max: 3,
+    retryIf: (error, _operation) => {
+      const doNotRetry = [
+        'FORBIDDEN',
+        'UNAUTHENTICATED',
+        'BAD_USER_INPUT',
+        'VALIDATION_ERROR'
+      ]
+      return !!error && !doNotRetry.includes(error?.extensions?.code)
+    }
   }
 })
 
 const httpLink = new HttpLink({
   uri: '/api/graphql',
-  credentials: 'include'
+  credentials: 'include',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  }
 })
 
 const client = new ApolloClient({
@@ -52,11 +64,13 @@ const client = new ApolloClient({
   defaultOptions: {
     watchQuery: {
       fetchPolicy: 'cache-and-network',
-      errorPolicy: 'ignore',
+      errorPolicy: 'all',
+      notifyOnNetworkStatusChange: true,
     },
     query: {
       fetchPolicy: 'network-only',
       errorPolicy: 'all',
+      notifyOnNetworkStatusChange: true,
     },
     mutate: {
       errorPolicy: 'all',
