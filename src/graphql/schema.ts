@@ -15,15 +15,55 @@ export const typeDefs = gql`
     id: ID!
     title: String!
     description: String!
+    category: String!
     author: User!
     createdAt: String!
     updatedAt: String!
     isActive: Boolean!
+    isFeatured: Boolean!
     viewCount: Int!
     participantsCount: Int!
+    qualityScore: Float!
+    sourceQualityScore: Float!
     comments: [Comment!]!
     voteStatistics: VoteStatistics!
     tags: [String!]!
+    timeline: [TimelineEvent!]!
+    phases: [DebatePhase!]!
+    currentPhase: String!
+    metadata: DebateMetadata
+  }
+
+  type DebateMetadata {
+    aiAnalysis: AIAnalysis
+    argumentStrengths: [String!]
+    argumentWeaknesses: [String!]
+    biasTypes: [String!]
+    suggestions: [String!]
+  }
+
+  type AIAnalysis {
+    argumentQuality: Float!
+    biasLevel: Float
+    factualAccuracy: Float
+    moderationConfidence: Float
+  }
+
+  type TimelineEvent {
+    id: ID!
+    type: String!
+    timestamp: String!
+    userId: String
+    content: String
+    metadata: String
+  }
+
+  type DebatePhase {
+    name: String!
+    startTime: String!
+    endTime: String
+    isActive: Boolean!
+    requirements: [String!]!
   }
 
   type Comment {
@@ -72,6 +112,7 @@ export const typeDefs = gql`
       tags: [String!]
     ): [Debate!]!
     featuredDebates: [Debate!]!
+    trendingTopics: [String!]!
   }
 
   type Mutation {
@@ -90,12 +131,14 @@ export const typeDefs = gql`
   input CreateDebateInput {
     title: String!
     description: String!
+    category: String!
     tags: [String!]!
   }
 
   input UpdateDebateInput {
     title: String
     description: String
+    category: String
     tags: [String!]
   }
 
