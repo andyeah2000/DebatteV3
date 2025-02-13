@@ -2,7 +2,7 @@ import { Inter, Roboto_Mono } from 'next/font/google'
 import { Providers } from './providers'
 import { Header } from '@/components/layout/header'
 import './globals.css'
-import ServiceWorkerRegistrator from '../components/ServiceWorkerRegistrator'
+import dynamic from 'next/dynamic';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -15,6 +15,8 @@ const robotoMono = Roboto_Mono({
   variable: '--font-roboto-mono',
   display: 'swap',
 })
+
+const ServiceWorkerRegistrator = dynamic(() => import('../components/ServiceWorkerRegistrator'), { ssr: false });
 
 export const metadata = {
   title: 'Debattle',
