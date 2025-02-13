@@ -1,0 +1,508 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AIAnalysis {
+  argumentQuality: Float!
+  biasLevel: Float
+  factualAccuracy: Float
+  moderationConfidence: Float!
+}
+
+type Analytics {
+  comments: CommentMetrics!
+  debates: DebateMetrics!
+  endDate: DateTime!
+  period: String!
+  startDate: DateTime!
+  users: UserMetrics!
+  votes: VoteMetrics!
+}
+
+type ArgumentQualityResponse {
+  score: Int!
+  strengths: [String!]!
+  structure: ArgumentStructure!
+  suggestions: [String!]!
+  weaknesses: [String!]!
+}
+
+type ArgumentStructure {
+  counterArgumentsAddressed: Boolean!
+  hasEvidence: Boolean!
+  hasLogicalFlow: Boolean!
+  hasThesis: Boolean!
+}
+
+type AuthResponse {
+  token: String!
+  user: User!
+}
+
+type BiasAnalysisResponse {
+  biasLevel: Float!
+  biasTypes: [String!]!
+  examples: [BiasExample!]!
+  suggestions: [String!]!
+}
+
+type BiasExample {
+  biasType: String!
+  text: String!
+}
+
+type CategoryMetric {
+  count: Float!
+  name: String!
+  percentage: Float!
+}
+
+type Comment {
+  author: User!
+  content: String!
+  createdAt: DateTime!
+  debate: Debate!
+  downvotes: Float!
+  id: ID!
+  isDeleted: Boolean!
+  isEdited: Boolean!
+  isProArgument: Boolean!
+  isVerified: Boolean!
+  media: [Media!]!
+  metadata: CommentMetadata!
+  replyTo: Comment
+  sources: [Source!]!
+  updatedAt: DateTime!
+  upvotes: Float!
+}
+
+type CommentAIAnalysis {
+  argumentQuality: Float!
+  biasLevel: Float
+  factualAccuracy: Float
+  moderationConfidence: Float!
+}
+
+type CommentArgumentAnalysis {
+  counterArgumentsAddressed: Boolean!
+  hasEvidence: Boolean!
+  hasLogicalFlow: Boolean!
+  hasThesis: Boolean!
+}
+
+type CommentCorrection {
+  claim: String!
+  correction: String!
+}
+
+type CommentFactCheck {
+  corrections: [CommentCorrection!]
+  isFactual: Boolean!
+  suggestedSources: [String!]!
+}
+
+type CommentMetadata {
+  aiAnalysis: CommentAIAnalysis!
+  argumentAnalysis: CommentArgumentAnalysis!
+  factCheck: CommentFactCheck!
+}
+
+type CommentMetrics {
+  averageCommentsPerDebate: Float!
+  totalComments: Float!
+  totalReplies: Float!
+}
+
+type Correction {
+  claim: String!
+  correction: String!
+}
+
+input CreateCommentInput {
+  content: String!
+  debateId: ID!
+  isProArgument: Boolean!
+  replyToId: ID
+  sources: [String!]! = []
+}
+
+input CreateDebateInput {
+  category: String!
+  description: String!
+  scheduledEndTime: DateTime
+  tags: [String!]! = []
+  title: String!
+}
+
+input CreateUserInput {
+  avatarUrl: String
+  bio: String
+  email: String!
+  password: String!
+  username: String!
+}
+
+input CreateVoteInput {
+  debateId: ID!
+  isProVote: Boolean!
+  reason: String
+}
+
+type CredibilityScore {
+  score: Float!
+  source: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Debate {
+  author: User!
+  category: String!
+  comments: [Comment!]!
+  conVotes: Float!
+  createdAt: DateTime!
+  currentPhase: String!
+  description: String!
+  id: ID!
+  isActive: Boolean!
+  isDeleted: Boolean!
+  isEnded: Boolean!
+  isFeatured: Boolean!
+  isModerated: Boolean!
+  metadata: DebateMetadata
+  participantsCount: Float!
+  phases: [DebatePhase!]!
+  proVotes: Float!
+  qualityScore: Float!
+  requiredSources: [String!]!
+  scheduledEndTime: DateTime
+  sourceQualityScore: Float!
+  summary: String
+  tags: [String!]!
+  timeline: [TimelineEvent!]!
+  title: String!
+  topics: [Topic!]!
+  updatedAt: DateTime!
+  viewCount: Float!
+  voteStatistics: VoteStatistics!
+  votes: [Vote!]!
+  winningPosition: String
+}
+
+type DebateKeyPoints {
+  con: [String!]!
+  pro: [String!]!
+}
+
+type DebateMetadata {
+  aiAnalysis: AIAnalysis!
+  argumentStrengths: [String!]!
+  argumentWeaknesses: [String!]!
+  biasTypes: [String!]!
+  phases: [DebatePhase!]!
+  suggestions: [String!]!
+  timeline: [TimelineEvent!]!
+}
+
+type DebateMetric {
+  commentsCount: Float!
+  id: String!
+  participantsCount: Float!
+  title: String!
+  votesCount: Float!
+}
+
+type DebateMetrics {
+  activeDebates: Float!
+  averageParticipants: Float!
+  completedDebates: Float!
+  popularDebates: [DebateMetric!]!
+  topCategories: [CategoryMetric!]!
+  totalDebates: Float!
+}
+
+type DebatePhase {
+  endTime: DateTime
+  isActive: Boolean!
+  name: String!
+  requirements: [String!]!
+  startTime: DateTime!
+}
+
+input DebatePhaseInput {
+  endTime: DateTime
+  isActive: Boolean!
+  name: String!
+  requirements: [String!]!
+  startTime: DateTime!
+}
+
+type DebateSummaryResponse {
+  keyPoints: DebateKeyPoints!
+  mainConclusions: [String!]!
+  qualityMetrics: QualityMetrics!
+  summary: String!
+}
+
+input DebatesInput {
+  category: String
+  limit: Int! = 10
+  page: Int! = 1
+  search: String
+  sortBy: String! = "recent"
+}
+
+type FactCheckResponse {
+  confidence: Float!
+  corrections: [Correction!]
+  isFactual: Boolean!
+  suggestedSources: [String!]
+  verificationMethod: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Media {
+  description: String
+  id: String!
+  title: String!
+  type: String!
+  url: String!
+}
+
+"""The action to take on reported content"""
+enum ModerateAction {
+  APPROVE
+  PENDING
+  REJECT
+}
+
+input ModerateContentInput {
+  action: ModerateAction!
+  contentId: ID!
+  note: String
+}
+
+type ModerationResponse {
+  confidence: Float!
+  isSafe: Boolean!
+  reasons: [String!]!
+}
+
+type Mutation {
+  createComment(input: CreateCommentInput!): Comment!
+  createDebate(createDebateInput: CreateDebateInput!): Debate!
+  createUser(createUserInput: CreateUserInput!): User!
+  createVote(createVoteInput: CreateVoteInput!): Vote!
+  deleteUser: Boolean!
+  downvoteComment(id: ID!): Comment!
+  generateAnalytics(period: String! = "daily"): Analytics!
+  incrementViewCount(id: ID!): Debate!
+  login(loginInput: LoginInput!): AuthResponse!
+  moderateContent(input: ModerateContentInput!): ReportedContent!
+  removeComment(id: ID!): Boolean!
+  removeDebate(id: ID!): Boolean!
+  updateComment(updateCommentInput: UpdateCommentInput!): Comment!
+  updateDebate(updateDebateInput: UpdateDebateInput!): Debate!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  upvoteComment(id: ID!): Comment!
+  verifyComment(id: ID!): Comment!
+}
+
+type QualityMetrics {
+  civilityScore: Float!
+  factualAccuracy: Float!
+  overallQuality: Float!
+}
+
+type Query {
+  assessArgumentQuality(content: String!): ArgumentQualityResponse!
+  assessSourceCredibility(sources: [String!]!): SourceCredibilityResponse!
+  comment(id: ID!): Comment!
+  comments: [Comment!]!
+  debate(id: ID!): Debate!
+  debateComments(debateId: ID!): [Comment!]!
+  debateSummary(id: ID!): DebateSummaryResponse!
+  debateVotes(debateId: ID!): [Vote!]!
+  debates(input: DebatesInput!): [Debate!]!
+  debatesByCategory(category: String!): [Debate!]!
+  detectBias(content: String!): BiasAnalysisResponse!
+  factCheck(content: String!): FactCheckResponse!
+  featuredDebates: [Debate!]!
+  generateDebateSummary(conArguments: [String!]!, description: String!, proArguments: [String!]!, title: String!): DebateSummaryResponse!
+  getAnalytics(period: String! = "daily"): Analytics!
+  getReportedContent: [ReportedContent!]!
+  getSystemHealth: SystemHealth!
+  getUserAnalytics(userId: ID!): Analytics!
+  hasUserVoted(debateId: ID!): Boolean!
+  me: User!
+  moderateContent(content: String!): ModerationResponse!
+  topic(id: String!): Topic!
+  topics: [Topic!]!
+  trendingTopics: [Topic!]!
+  user(id: ID!): User!
+  userVotes(userId: ID!): [Vote!]!
+  users: [User!]!
+  vote(id: ID!): Vote!
+  voteStatistics(debateId: ID!): VoteStatistics!
+  votes: [Vote!]!
+}
+
+type ReportedContent {
+  createdAt: DateTime!
+  id: ID!
+  moderatedAt: DateTime
+  moderatedBy: User!
+  moderationNote: String
+  reason: String!
+  reportedBy: User!
+  status: String!
+  type: String!
+}
+
+type ServiceStatus {
+  errors: [String!]
+  latency: Float!
+  name: String!
+  status: String!
+}
+
+type Source {
+  credibilityScore: Float
+  id: String!
+  title: String!
+  url: String!
+  verificationStatus: String!
+}
+
+type SourceCredibilityResponse {
+  analysis: [String!]!
+  credibilityScores: [CredibilityScore!]!
+  recommendations: [String!]!
+}
+
+type SystemHealth {
+  activeServices: [String!]!
+  cpuUsage: Float!
+  databaseStatus: String!
+  memoryUsage: Float!
+  services: [ServiceStatus!]!
+  status: String!
+  uptime: Float!
+}
+
+type TimelineEvent {
+  content: String
+  id: String!
+  metadata: String
+  timestamp: DateTime!
+  type: String!
+  userId: String
+}
+
+input TimelineEventInput {
+  content: String
+  metadata: String
+  type: String!
+  userId: String
+}
+
+type Topic {
+  category: String!
+  createdAt: DateTime!
+  debateCount: Float!
+  debates: [Debate!]!
+  description: String
+  id: ID!
+  relatedTopics: [Topic!]!
+  title: String!
+  trend: String!
+  trendScore: Float!
+  updatedAt: DateTime!
+}
+
+input UpdateCommentInput {
+  content: String
+  id: ID!
+  isProArgument: Boolean
+  replyToId: ID
+  sources: [String!] = []
+}
+
+input UpdateDebateInput {
+  category: String
+  currentPhase: String
+  description: String
+  id: ID!
+  isModerated: Boolean
+  phases: [DebatePhaseInput!]
+  scheduledEndTime: DateTime
+  tags: [String!]
+  timeline: [TimelineEventInput!]
+  title: String
+}
+
+input UpdateUserInput {
+  avatarUrl: String
+  bio: String
+  currentPassword: String
+  password: String
+  username: String
+}
+
+type User {
+  avatarUrl: String
+  bio: String
+  comments: [Comment!]!
+  createdAt: DateTime!
+  debates: [Debate!]
+  email: String!
+  githubId: String
+  googleId: String
+  id: ID!
+  isDeleted: Boolean!
+  isVerified: Boolean!
+  lastLoginAt: DateTime
+  refreshToken: String
+  reputationScore: Float!
+  roles: [String!]!
+  updatedAt: DateTime!
+  username: String!
+  votes: [Vote!]!
+}
+
+type UserMetrics {
+  activeUsers: Float!
+  newUsers: Float!
+  totalUsers: Float!
+}
+
+type Vote {
+  createdAt: DateTime!
+  debate: Debate!
+  id: ID!
+  isDeleted: Boolean!
+  isProVote: Boolean!
+  user: User!
+}
+
+type VoteMetrics {
+  averageVotesPerDebate: Float!
+  conVotes: Float!
+  proVotes: Float!
+  totalVotes: Float!
+}
+
+type VoteStatistics {
+  conPercentage: Float!
+  conVotes: Float!
+  proPercentage: Float!
+  proVotes: Float!
+  totalVotes: Float!
+}
