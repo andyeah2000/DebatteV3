@@ -3,42 +3,58 @@ import { Button } from '@/components/ui/button'
 import { HeroSection } from '@/components/sections/hero'
 import { FeaturedDebates } from '@/components/sections/featured-debates'
 import { TrendingTopics } from '@/components/sections/trending-topics'
+import { SearchInput } from '@/components/ui/input'
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen space-y-16 pb-16">
       <HeroSection />
       
-      <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Featured Debates
-        </h2>
-        <FeaturedDebates />
-      </section>
-
-      <section className="bg-secondary-50 dark:bg-secondary-900">
-        <div className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold text-center mb-8">
-            Trending Topics
+      <section className="container mx-auto px-4">
+        <div className="max-w-2xl mx-auto space-y-8">
+          <h2 className="text-2xl font-bold text-center">
+            Explore Debates
           </h2>
-          <TrendingTopics />
+          <SearchInput />
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-3xl font-bold mb-4">
-          Ready to Join the Conversation?
-        </h2>
-        <p className="text-secondary-600 dark:text-secondary-400 mb-8 max-w-2xl mx-auto">
-          Engage in meaningful debates, share your perspective, and contribute to a more informed discourse.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Link href="/debates/new">
-            <Button>Start a Debate</Button>
-          </Link>
-          <Link href="/debates">
-            <Button variant="outline">Browse Debates</Button>
-          </Link>
+      <section className="container mx-auto px-4">
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">
+            Featured Debates
+          </h2>
+          <FeaturedDebates />
+        </div>
+      </section>
+
+      <section className="bg-secondary/30 py-16">
+        <div className="container mx-auto px-4">
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">
+              Trending Topics
+            </h2>
+            <TrendingTopics />
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 text-center">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <h2 className="text-2xl font-bold">
+            Ready to Join the Conversation?
+          </h2>
+          <p className="text-muted-foreground">
+            Engage in meaningful debates, share your perspective, and contribute to a more informed discourse.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link href="/debates/new">
+              <Button size="lg">Start a Debate</Button>
+            </Link>
+            <Link href="/debates">
+              <Button variant="outline" size="lg">Browse Debates</Button>
+            </Link>
+          </div>
         </div>
       </section>
     </main>
